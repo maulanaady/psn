@@ -1,14 +1,16 @@
-Postgres Data Processing Script Documentation
-Overview
+# Postgres Data Processing Script Documentation
+
+## Overview
 This script performs a series of data operations, including preparation, transformation, and updates of data stored in PostgreSQL and DuckDB databases. The script logs key operations, handles errors, and sends notifications via Telegram when required.
 
-Key Features:
-Establishes connections to PostgreSQL and DuckDB.
-Processes and transforms data.
-Handles database transaction updates.
-Notifies users of events or errors via Telegram.
-Creates PID files for process identification.
-Dependencies
+**Key Features**:
+* Establishes connections to PostgreSQL and DuckDB.
+* Processes and transforms data.
+* Handles database transaction updates.
+* Notifies users of events or errors via Telegram.
+* Creates PID files for process identification.
+
+**Dependencies**
 The following libraries are used in the script:
 
 polars: For data manipulation and reading from databases.
@@ -17,61 +19,43 @@ psycopg2: For PostgreSQL database connections.
 requests: For sending HTTP requests (e.g., to Telegram).
 dotenv: For loading environment variables.
 logging: For logging events and errors.
-Make sure these libraries are installed:
 
-bash
-Copy code
-pip install polars duckdb psycopg2 requests python-dotenv
-Function Definitions
-1. get_logger()
+
+## Functions
+**get_logger()**  
 This function initializes a logging system, creating both a stream handler (for console output) and a file handler (logging to a file). The log file is named based on the current date and stored at /ubq_udr/udr_encoder/log/calculate/.
 
-2. send_to_telegram(message)
+**send_to_telegram(message)**  
 This function sends a message to a Telegram bot, notifying the user of key events or errors in the script. The apiToken and chatID are loaded from environment variables.
 
-3. create_pid_file(pid_file)
+**create_pid_file(pid_file)**  
 This function writes the current process ID (PID) to a file. This can help manage running processes by tracking their status.
 
-4. preparation(con, reset_time)
+**preparation(con, reset_time)**  
 This function prepares DuckDB tables by deleting old records based on a reset_time, reducing unnecessary data, and creating necessary tables and macros if required.
 
-5. reset_summary_flag(start_time, con, connection, table)
+**reset_summary_flag(start_time, con, connection, table)** 
 This function resets the summary flag for records in PostgreSQL, clearing old summary data so that new calculations can be made.
 
-6. get_connection(username, password, port=5432)
+**get_connection(username, password, port=5432)**  
 This function creates a connection to the PostgreSQL database using the credentials provided.
 
-7. read_main_data(table_name, cnx)
+**read_main_data(table_name, cnx)**  
 This function retrieves a subset of data from PostgreSQL that is ready for processing. The query selects records that have a terminal status of 'normal' or 'minor' and a summary flag of 0.
 
-8. transform(con)
+**transform(con)**  
 This function performs the data transformation process. It applies rules to calculate data usage, handle anomalies, and transform the data accordingly.
 
-9. update_duckdb(con)
+**update_duckdb(con)**  
 This function updates DuckDB with the transformed data by inserting or updating records.
 
-10. update_records(duckdb_conn, table_name, records)
+**update_records(duckdb_conn, table_name, records)**  
 This function updates records in PostgreSQL using the transformed data. It retries updates in the event of a deadlock or failed transaction.
 
-11. send_psycopg2_exception(err)
-This function logs and sends detailed error information to Telegram, including psycopg2-specific diagnostic data.
-
-12. main()
+**main()**  
 The entry point of the script that coordinates the overall process, from creating PID files to resetting summary flags, transforming data, and updating databases.
 
-Usage
-Ensure the necessary environment variables are set:
-
-TELEGRAM_API_TOKEN: The API token for the Telegram bot.
-TELEGRAM_CHAT_ID: The chat ID to which notifications will be sent.
-Run the script:
-
-bash
-Copy code
-python script.py
-The script logs its execution to both the console and the log file /ubq_udr/udr_encoder/log/calculate/.
-
-Error Handling
+**Error Handling**  
 Errors during database connections or operations are logged and sent to Telegram.
 In case of transaction errors (e.g., deadlock), the script retries the update process.
 
