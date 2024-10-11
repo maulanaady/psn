@@ -143,8 +143,9 @@ The main() function is the entry point of the script. It performs the following 
 ```mermaid
 graph TD;
     A[Sets up logging] --> B{Checks if the script is already running};
-    B --> C[Processes UDR files];
-    C --> E[Cleans up old log files];
+    B -->|Yes| C[Processes UDR files];
+    B -->|No| E[End];
+    C --> D[Cleans up old log files];
     D --> E[End];
 
 Sets up logging.
