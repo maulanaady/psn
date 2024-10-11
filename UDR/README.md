@@ -1,4 +1,4 @@
-<img src="udr.png" height="1000" />
+<img src="udr.png" height="500" />
 
 This folder contains project that assist migration UDR processing from ORACLE to POSTGRES.
 
