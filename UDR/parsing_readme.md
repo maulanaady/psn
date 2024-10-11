@@ -141,7 +141,7 @@ main() Function
 The main() function is the entry point of the script. It performs the following steps:
 
 ```mermaid
-graph TD;
+graph LR;
     A[Sets up logging] --> B{Checks if the script is already running};
     B -->|Yes| C[Processes UDR files];
     B -->|No| E[End];
