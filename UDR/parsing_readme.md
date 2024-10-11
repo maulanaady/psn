@@ -4,7 +4,7 @@
 This script is designed to process UDR (Usage Data Record) files from specified directories, insert the processed data into a PostgreSQL database, and manage the file movement during and after processing. The script utilizes multi-threading for efficient file processing and implements logging and error handling, including sending notifications via Telegram.
 
 ## Functions
-*delete_old_file(dir_path)*
+*delete_old_file(dir_path)*  
 Purpose: Deletes files older than 5 days in the specified directory.
 Parameters:
 dir_path: The directory to scan for old files.
