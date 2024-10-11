@@ -216,5 +216,5 @@ Purpose:
 This function is designed to process records with non-active or critical terminal statuses, ensuring they are handled correctly by building a consistent dictionary that can be stored or processed further. It also ensures any incomplete timestamps are corrected before database insertion.
 
 Summary:  
-*_proc_normal*: Processes records where the device's terminal is active and has valid usage data. Constructs and returns a detailed dictionary of device status, capacity, and usage for further processing.
+*_proc_normal*: Processes records where the device's terminal is active and has valid usage data. Constructs and returns a detailed dictionary of device status, capacity, and usage for further processing.  
 *_proc_suspended*: Handles records where the device is in a suspended or critical state. It builds a simpler dictionary and ensures the data is clean before storing or processing further.
