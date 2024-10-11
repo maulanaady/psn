@@ -1,27 +1,31 @@
-UDR Encoder Script Documentation
-Overview
+# UDR Encoder Script Documentation
+
+## Overview
 This script is designed to process UDR (Usage Data Record) files from specified directories, insert the processed data into a PostgreSQL database, and manage the file movement during and after processing. The script utilizes multi-threading for efficient file processing and implements logging and error handling, including sending notifications via Telegram.
 
-Functions
-delete_old_file(dir_path)
+## Functions
+*delete_old_file(dir_path)*
 Purpose: Deletes files older than 5 days in the specified directory.
 Parameters:
 dir_path: The directory to scan for old files.
 Functionality:
 Recursively searches for files containing a date prefix older than 5 days and removes them.
-create_pid_file(pid_file)
+
+*create_pid_file(pid_file)*
 Purpose: Creates a PID file to track the running script's process ID.
 Parameters:
 pid_file: The path where the PID file is created.
 Functionality:
 Writes the current process ID (PID) into the specified file.
-get_logger(log_file: str)
+
+*get_logger(log_file: str)*
 Purpose: Configures and returns a logger to log messages both to the console and to a log file.
 Parameters:
 log_file: The name of the log file.
 Functionality:
 Creates a log file using the current date and logs messages with DEBUG level or higher.
-_get_connection(username, password, counter, logger, port=5432)
+
+*get_connection(username, password, counter, logger, port=5432)*
 Purpose: Establishes a connection to the PostgreSQL database.
 Parameters:
 username: Database username.
@@ -31,45 +35,52 @@ logger: Logger for logging messages.
 port: PostgreSQL port (default is 5432).
 Functionality:
 Attempts to connect to a PostgreSQL database with retry logic.
-sort_by_modified_time(filename)
+
+*sort_by_modified_time(filename)*
 Purpose: Returns the modification time of a UDR file based on its filename.
 Parameters:
 filename: The UDR file name.
 Functionality:
 Extracts the timestamp from the file name and converts it into a datetime object.
-cek_raw_file(logger)
+
+*cek_raw_file(logger)*
 Purpose: Reads UDR files from the RAW directory and moves them to the PROC directory for processing.
 Parameters:
 logger: Logger for logging messages.
 Functionality:
 Moves a maximum of 35 UDR files from the RAW to the PROC directory.
-cek_proc_file(proc_path, logger)
+
+*cek_proc_file(proc_path, logger)*
 Purpose: Retrieves UDR files from the PROC directory.
 Parameters:
 proc_path: Directory path where PROC files are located.
 logger: Logger for logging messages.
 Functionality:
 Logs and returns the number of UDR files found in the PROC directory.
-_timestampToDate(timestamp)
+
+*_timestampToDate(timestamp)*
 Purpose: Converts a Unix timestamp into a human-readable date.
 Parameters:
 timestamp: Unix timestamp.
 Functionality:
 Converts the timestamp to the format %Y-%m-%d %H:%M:%S.
-_proc_normal(data, logger)
+
+*_proc_normal(data, logger)*
 Purpose: Processes a UDR file with a "normal" terminal status.
 Parameters:
 data: The UDR data as a dictionary.
 logger: Logger for logging messages.
 Functionality:
 Extracts key fields from the UDR data and prepares them for database insertion.
-_proc_suspended(data)
+
+*_proc_suspended(data)*
 Purpose: Processes a UDR file with a "suspended" terminal status.
 Parameters:
 data: The UDR data as a dictionary.
 Functionality:
 Similar to _proc_normal but processes data with "suspended" terminal status.
-_thread_process(procFile, logger)
+
+*_thread_process(procFile, logger)*
 Purpose: Spawns threads to process multiple UDR files concurrently.
 Parameters:
 procFile: List of UDR files to process.
@@ -83,29 +94,34 @@ filename: Name of the file to move.
 proc_path: Path of the PROC directory.
 finish_path: Path of the FINISH directory.
 logger: Logger for logging messages.
-is_directory_empty(directory)
+
+*is_directory_empty(directory)*
 Purpose: Checks if a directory is empty.
 Parameters:
 directory: Path of the directory.
 Functionality:
 Returns True if the directory is empty, otherwise False.
-find_udr_files(directory)
+
+*find_udr_files(directory)*
 Purpose: Finds all UDR files in a given directory.
 Parameters:
 directory: Path of the directory to search.
 Functionality:
 Returns a list of UDR files.
-send_to_telegram(message, logger)
+
+*send_to_telegram(message, logger)*
 Purpose: Sends a message to a configured Telegram chat.
 Parameters:
 message: The message to send.
 logger: Logger for logging messages.
-cek_proc_file_is_not_empty(proc_path, logger)
+
+*cek_proc_file_is_not_empty(proc_path, logger)*
 Purpose: Checks if the PROC directory is empty and logs any remaining UDR files.
 Parameters:
 proc_path: Path of the PROC directory.
 logger: Logger for logging messages.
-insert_query(results, logger, counter, filename)
+
+*insert_query(results, logger, counter, filename)*
 Purpose: Inserts UDR data into the PostgreSQL database.
 Parameters:
 results: List of tuples containing UDR data to insert.
@@ -114,7 +130,8 @@ counter: Thread number.
 filename: Name of the file being processed.
 Functionality:
 Inserts data into the PostgreSQL database using an INSERT statement and retries on deadlock or transaction failure.
-process(file, counter, logger)
+
+*process(file, counter, logger)*
 Purpose: Main function to process a UDR file and insert its contents into the database.
 Parameters:
 file: UDR file to process.
@@ -123,9 +140,16 @@ logger: Logger for logging messages.
 main() Function
 The main() function is the entry point of the script. It performs the following steps:
 
+```mermaid
+graph TD;
+    A[Sets up logging] --> B{Checks if the script is already running};
+    B --> C[Processes UDR files];
+    C --> E[Cleans up old log files];
+    D --> E[End];
+
 Sets up logging.
 Checks if the script is already running using a PID file.
-Processes UDR files from the RAW directory, moves them to the PROC directory, and processes them using threads.
+Processes UDR files from the RAW directory, moves them to the PROC directory, and processes them using threads, then move files to FINISH directory.
 After processing, checks if any files are left in the PROC directory.
 Cleans up old log files.
 
