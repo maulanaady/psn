@@ -147,6 +147,7 @@ graph TD;
     B -->|No| E[End];
     C --> D[Cleans up old log files];
     D --> E[End];
+```    
 
 Sets up logging.
 Checks if the script is already running using a PID file.
