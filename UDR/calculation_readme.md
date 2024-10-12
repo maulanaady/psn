@@ -85,13 +85,13 @@ graph TD;
         H --> J[preparation#40;#41;] --> F[read_main_data#40;#41;];
     end
 
+    P[Main Data] --> |Read from PostgreSQL| F;
     F --> K[transform#40;#41;];
     A --> L[update_records#40;#41;];
     A --> M[update_duckdb#40;#41;];
     A --> N[send_to_telegram#40;#41;];
 
-    E --> |Connect to PostgreSQL| O[PostgreSQL Connection];
-    F --> |Read from PostgreSQL| P[Main Data];
+   
     K --> |Transform DuckDB| Q[DuckDB Transformation];
     L --> |Update PostgreSQL| R[Updated Records];
     M --> |Update DuckDB| S[DuckDB Updated];
