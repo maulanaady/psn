@@ -175,7 +175,7 @@ graph TD;
     end;
 
     subgraph Database_Interaction;
-        get_connection; --> I
+        I --> get_connection;
     end;
 ```
 
