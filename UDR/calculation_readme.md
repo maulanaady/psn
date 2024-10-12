@@ -60,7 +60,7 @@ Errors during database connections or operations are logged and sent to Telegram
 In case of transaction errors (e.g., deadlock), the script retries the update process.
 
 ```mermaid
-graph LR;
+graph TD;
     A[main#40;#41;] --> B[get_logger#40;#41;];
     A --> C[load_dotenv#40;#41;];
     A --> D[create_pid_file#40;#41;];
