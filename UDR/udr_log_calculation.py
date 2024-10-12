@@ -1,4 +1,3 @@
-# postgres
 import time,datetime,logging,sys,os
 import polars as pl
 import duckdb,logging,requests
@@ -7,8 +6,6 @@ from dotenv import load_dotenv
 
 def get_logger():
     script_path = os.path.abspath(__file__)
-    # Extract the directory path
-    dir_path = os.path.dirname(script_path)
     date_prefix = datetime.datetime.now().strftime("%Y%m%d")
     log_file = f"udr_calculation_{date_prefix}.log"
     log_path = os.path.join("/ubq_udr/udr_encoder/log/calculate/",log_file)
@@ -63,24 +60,24 @@ def preparation(con,reset_time):
     con.execute("select max(end_date) from sec_df_duckdb_monthly")
     result = con.fetchone()[0]
     logging.info(f"New max end_date: {result.strftime('%Y-%m-%d %H:%M:%S')}")    
-    # con.sql("""create table sec_df_duckdb_monthly
-    #     (id BIGINT,
-    #     subscriber_number VARCHAR,
-    #     end_date TIMESTAMP,
-    #     clock BIGINT,
-    #     OVERALL_USAGE_ANYTIME BIGINT,
-    #     OVERALL_USAGE_OFFPEAK BIGINT,
-    #     OVERALL_AVAILABLE_TOKENS BIGINT,
-    #     load_time TIMESTAMP,
-    #     UNIQUE(subscriber_number,end_date)
-    #     )
-    #     """)
+    con.sql("""create table if not exists sec_df_duckdb_monthly
+        (id BIGINT,
+        subscriber_number VARCHAR,
+        end_date TIMESTAMP,
+        clock BIGINT,
+        OVERALL_USAGE_ANYTIME BIGINT,
+        OVERALL_USAGE_OFFPEAK BIGINT,
+        OVERALL_AVAILABLE_TOKENS BIGINT,
+        load_time TIMESTAMP,
+        UNIQUE(subscriber_number,end_date)
+        )
+        """)
 
-    # con.sql("""
-    #         CREATE MACRO if not exists is_not_anomaly(curr_clock,curr_value,prev_clock,prev_value) AS 
-    #         CASE WHEN (curr_value - prev_value) <= (100*(curr_clock - prev_clock)/60) AND prev_value >= 0 AND curr_value >= 0
-	#         THEN TRUE ELSE FALSE END"""
-    #         )
+    con.sql("""
+            CREATE MACRO if not exists is_not_anomaly(curr_clock,curr_value,prev_clock,prev_value) AS 
+            CASE WHEN (curr_value - prev_value) <= (100*(curr_clock - prev_clock)/60) AND prev_value >= 0 AND curr_value >= 0
+	        THEN TRUE ELSE FALSE END"""
+            )
     logging.info('Done preparation..')
 
 def reset_summary_flag(start_time,con,connection,table):
@@ -113,21 +110,15 @@ def get_connection(username, password, port=5432):
     conn_uri = f"postgresql://{username}:{password}@172.20.12.150:{port},172.20.12.177:{port}/udr?target_session_attrs=read-write"
     try:
         connection = psycopg2.connect(conn_uri)
-        # conn = f"mysql+pymysql://{username}:{password}@{host}:3306/bb_usage"
-        # engine = create_engine(conn)
-        # connection = engine.connect()
-        # connection = mysql.connector.connect(user=username, password=password, host=host, database="bb_usage")
         logging.info(f'Connected to UDR db..')
         return connection
     except Exception as e:
         logging.exception(e)
         send_to_telegram(f"An error occurred when trying to connect to database with description : {str(e)}")
-        # raise Exception("an error occurred when trying to connect to database")
         sys.exit(1)
 
 def read_main_data(table_name, cnx):
     logging.info('Reading main data ...')
-    # start_date = start_time.date()
     main_sql = f"""
     select 
     id,
@@ -146,17 +137,12 @@ def read_main_data(table_name, cnx):
     limit 100000
     """
     try:
-        # conn = f"mysql+pymysql://root:root@172.20.12.177:3306/bb_usage"
-        # engine = create_engine(conn)
-        # connection = engine.connect()
         main_df = pl.read_database(query = main_sql,connection=cnx)
         logging.info(f'Done, {len(main_df)} rows')
-        # connection.close()
         return main_df
     except Exception as e:
         logging.error(f'Error occured when reading main data with description: {str(e)}')
         send_to_telegram(f'Error occured when reading main data with description: {str(e)}')
-        # raise Exception("an error occurred when try to read main data")
         cnx.close()
         sys.exit(1)
 
@@ -292,7 +278,6 @@ def transform(con):
     except Exception as e:
         logging.error(f'Error occured when transforming data with description: {str(e)}')
         send_to_telegram(f'Error occured when transforming data with description: {str(e)}')
-        # raise Exception(f'Error occured when transforming data with description: {str(e)}')
         con.close()
         sys.exit(1)    
 
@@ -344,7 +329,6 @@ def update_records(duckdb_conn,table_name,records):
         conn.commit()
         logging.info(f'Updated records: {cursor.rowcount} rows')
         cursor.close()        
-        # update_monitoring(con)
     except Exception as e:
         if isinstance(e,psycopg2.errors.DeadlockDetected):
             logging.warning(f'Deadlock found, retrying to update records ...')
@@ -361,37 +345,13 @@ def update_records(duckdb_conn,table_name,records):
         else:
             logging.error(f'Other Error occured while updating records with description {str(e)}. Skipping the update process.')
             send_to_telegram(f'Other Error occured while updating records with description {str(e)}')
-            send_psycopg2_exception(e)
-            # raise Exception(f'Other Error occured while updating records with description {str(e)}')
             conn.close()
             sys.exit(1)
+    finally:
+        conn.close()
 
-def send_psycopg2_exception(err):
-    # get details about the exception
-    err_type, err_obj, traceback = sys.exc_info()
-    # get the line number when exception occured
-    line_num = traceback.tb_lineno
-    # print the connect() error
-    message = f"""\npsycopg2 ERROR: {err}, on line number: {line_num}"""
-    logging.error("\npsycopg2 ERROR:", err, "on line number:", line_num)
-
-    message = message + f"""psycopg2 traceback: {traceback} -- type: {err_type}"""
-    logging.error("psycopg2 traceback:", traceback, "-- type:", err_type)
-    # psycopg2 extensions.Diagnostics object attribute
-    message = message + f"""\nextensions.Diagnostics: {err.diag}"""
-    logging.error("\nextensions.Diagnostics:", err.diag)
-    # print the pgcode and pgerror exceptions
-    message = message + f"""pgerror: {err.pgerror}"""
-    logging.error("pgerror:", err.pgerror)
-
-    message = message + f"""pgcode: {err.pgcode}\n"""
-    logging.error("pgcode:", err.pgcode, "\n")
-
-    send_to_telegram(message)
     
 def main():
-    
-
     script_path = os.path.abspath(__file__)
     filename = os.path.basename(script_path)
 
@@ -401,7 +361,6 @@ def main():
         logging.info("Script is already running. Exiting.\n\n\n")
         sys.exit(0)
     try:
-        # Create the PID file
         create_pid_file(pid_file_path)
 
         logging.info("Script is running!")
