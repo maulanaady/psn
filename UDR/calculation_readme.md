@@ -75,7 +75,7 @@ graph LR;
 ```mermaid
 graph TD;
     A[main#40;#41;] --> |Initialize Logger| B[get_logger#40;#41;];
-    A --> D[create_pid_file#40;#41;];
+    B --> D[create_pid_file#40;#41;];
     A --> F[read_main_data#40;#41;];
     
     subgraph Conditional Logic
