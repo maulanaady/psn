@@ -1,9 +1,3 @@
-# parsing postgres
-# #############################################################
-#            Thread parsing UDR without filter datetime       #
-#            Date : 8-01-2024                                 #
-# #############################################################
-
 import logging,threading
 import time,logging,psycopg2
 from datetime import datetime, timedelta
@@ -48,22 +42,7 @@ def get_logger(log_file: str):
     return logger
 
 
-# def convert_datetime(start_date, end_date):
-#     start_date = datetime.fromisoformat(start_date)
-#     end_date = datetime.fromisoformat(end_date)
-
-#     print(f"start date from airflow : {start_date}")
-
-#     # Add 7 hours to the datetime
-#     result_start_date = int(
-#         (start_date - timedelta(minutes=7) + timedelta(hours=7)).strftime("%Y%m%d%H%M"))
-#     result_end_date = int(
-#         (end_date - timedelta(minutes=7) + timedelta(hours=7)).strftime("%Y%m%d%H%M"))
-
-#     return (result_start_date, result_end_date)
-
-
-def _get_connection(username, password, counter, logger, port=5432):
+def get_connection(username, password, counter, logger, port=5432):
     logging.info('try to get connection ...')
     conn_uri = f"postgresql://{username}:{password}@172.20.12.150:{port},172.20.12.177:{port}/udr?target_session_attrs=read-write"
 
@@ -90,14 +69,6 @@ def sort_by_modified_time(filename):
     time_str = filename.split('_')[-1].split('.')[0]
     return datetime.strptime(time_str, '%Y%m%d%H%M')
 
-# def sort_by_modified_time(filename):
-#       # Get the full path
-#     filepath = os.path.join(raw_path, filename)
-#     # Get the last modified time (epoch timestamp)
-#     last_modified = os.path.getmtime(filepath)
-#     # Convert timestamp to datetime object (optional)
-#     # modified_time = datetime.fromtimestamp(last_modified)
-#     return last_modified
 
 def cek_raw_file(logger):
     logger.info('== Try to read file in path RAW ==')
@@ -132,9 +103,7 @@ def cek_raw_file(logger):
 
 def cek_proc_file(proc_path, logger):
     logger.info('== Try to read file in path PROC ==')
-    # count = 0
-
-    # udrFile = [f for f in sorted(os.listdir(proc_path)) if '.udr' in f.lower()]
+    
     udrFile = [file for file in os.listdir(proc_path) if file.endswith(".udr")]
     logger.info(f'UDR File in PROC : {len(udrFile)} files')
 
@@ -149,9 +118,6 @@ def _proc_normal(data, logger):
 
     spname = data['serviceplan'] if 'serviceplan' in data else None
     esn = data['esn'] if 'esn' in data else None
-    # latitude = data['latitude'] if 'latitude' in data else None
-    # longitude = data['longitude'] if 'longitude' in data else None
-
     clock = int(str(data['lastpolledtime'])[0:10])
 
     if (data['overallcapacity'] > 1 and data['overallusage'] > 1) or (data['offpeakoverallcapacity'] > 1 and data['offpeakoverallusage'] > 1):
@@ -179,17 +145,13 @@ def _proc_normal(data, logger):
 
         logger.info(
             f"ID {data['deviceid']}: PolledTime: {_timestampToDate(clock)} Status: {data['terminalstatus']} .... IGNORED")
-        # return False
-
+        
 
 def _proc_suspended(data):
-
     clock = int(str(data['lastpolledtime'])[0:10])
     spname = data['serviceplan'] if 'serviceplan' in data else None
     esn = data['esn'] if 'esn' in data else None
-    # latitude = data['latitude'] if 'latitude' in data else None
-    # longitude = data['longitude'] if 'longitude' in data else None
-
+    
     rdata = {
         "sbcNum": data['deviceid'],
         "clock": str(data['lastpolledtime'])[0:10],
@@ -204,17 +166,13 @@ def _proc_suspended(data):
         "terminalStatus": data['terminalstatus'],
         "inPeakPeriod": data['inpeakperiod'],
         "esn": esn,
-        "spName": spname,
-        # "latitude": latitude,
-        # "longitude": longitude,
+        "spName": spname
     }
 # Ady: update data hasil parsing karena ada udr record dengan lastpolledtime = 0, 
 # sehingga ns (dengan formula: "ns": str(data['lastpolledtime'])[10:13]) menghasilkan output ns = '',
 # padahal kolom ns ini dipasang constraint not null di tabelnya
     if str(data['lastpolledtime'])[10:13] == '':
-        # logger.info(f'error cek: {data}')
         rdata.update({'ns': 0})
-        # logger.info(f'update error cek: {data}')    
     return rdata
 
 
@@ -255,21 +213,6 @@ def find_udr_files(directory):
         directory) if file.endswith(".udr")]
     return udr_files
 
-
-# def send_to_telegram(message, logger):
-#     import requests
-
-#     apiToken = '1613558114:AAHSoUmYdeX2NMwGAIpJTrryVZ7YjbTSEIY'
-#     # chatID = -1002121384775
-#     chatID = -567130388
-#     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
-
-#     try:
-#         requests.post(
-#             apiURL, json={'chat_id': chatID, 'text': message})
-#         # print(response.text)
-#     except Exception as e:
-#         logger.warning(e)
 
 def send_to_telegram(message, logger):
     apiToken = os.getenv('TELEGRAM_API_TOKEN')
@@ -328,7 +271,7 @@ def insert_query(results, logger, counter, filename):
             udr_file_name,
             created_by
             ) VALUES """
-    conn = _get_connection(pg_username, pg_password, counter, logger, port=5432)
+    conn = get_connection(pg_username, pg_password, counter, logger, port=5432)
     logger.info(f"parsed rowcount: {len(results)} for filename {filename}")
     if len(results) > 0:
         try:
@@ -338,13 +281,7 @@ def insert_query(results, logger, counter, filename):
             cursor.close()
             conn.commit()
             logger.info(f'Done inserting records for file {filename}, affected rows: {cursor.rowcount}')
-            # # return cursor.rowcount
-            # logger.info(
-            #     f" File : {filename} inserted affected row {cursor.rowcount}")
-            # conn.commit()
             resp = True
-
-        # except mysql.connector.Error as err:
         except Exception as e:
             if isinstance(e,errors.DeadlockDetected):
                 logger.warning(f'Deadlock found, retrying to insert records for file {filename}')
@@ -373,33 +310,20 @@ def insert_query(results, logger, counter, filename):
 
 def process(file, counter, logger):
     logger.info("[Read Process {}] File {}".format(counter, file))
-
-    # host = "172.20.12.177"
-    # username = "root"
-    # password = "root"
-    # created = (sys.argv[0]).split('.')[0]
-
+    
     logger.info("[Thread {}] File {}".format(counter, file))
 
-    # conn = _get_connection(host, username, password, counter, logger)
-
-    # if conn is not None:
     if file is not None and file.endswith('.udr'):
         filename = file
         path_file = proc_path+filename
-        # print(path_file)
         results = []
-        # row_affected = 0
         try:
             with open(path_file, 'r') as file:
                 for f in file:
                     line = f.lower()
-
                     try:
                         jline = json.loads(line)
                         terminalStatus = jline['terminalstatus'] if "terminalstatus" in jline else ""
-
-                        # cek status terminal
                         if terminalStatus == 'normal':
                             data = _proc_normal(jline, logger)
                         elif terminalStatus == "minor":
@@ -421,7 +345,6 @@ def process(file, counter, logger):
                         logger.warning(
                             f"Error decoding JSON in line: {line}. Error: {e}")
                         continue
-                    # jline = json.loads(line)
                 insert_succeded,rowcount = insert_query(results, logger, counter, filename)
                 if (insert_succeded == True and rowcount > 0) or (insert_succeded == False and rowcount == 0):
                     moved_after_insert(filename, proc_path,
@@ -432,14 +355,8 @@ def process(file, counter, logger):
     else:
         logger.info(
             f"Error: File {file} is None or does not have the .udr extension.")
-    # else:
-    #     logger.info("Error: Connection not established.")
-
 
 def main():
-    # raw_path = "/home/ubuntu/ubq_udr/udr_encoder/data/RAW/"
-    # proc_path = "/home/ubuntu/ubq_udr/udr_encoder/data/PROC/"
-    # finish_path = "/home/ubuntu/ubq_udr/udr_encoder/data/FINISH/"
     logger = get_logger(log_file=f"thread_parsing_udr")
 
     script_path = os.path.abspath(__file__)
