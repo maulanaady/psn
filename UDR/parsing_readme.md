@@ -161,9 +161,7 @@ graph TD;
     E -->|Process Files in Threads| F[_thread_process#40;#41;];
     F -->|Process Each File| G[process#40;#41;];
 
-    G -->|Parse UDR File| H[json.loads#40;#41;];
     H -->|Insert Data| I[insert_query#40;#41;];    
-    I -->|Move After Insert| J[moved_after_insert#40;#41;];
 
     A -->|Check PROC Is Empty| K[cek_proc_file_is_not_empty#40;#41;];
     A -->|Delete Old Logs| L[delete_old_file#40;#41;];
