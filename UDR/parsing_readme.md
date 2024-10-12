@@ -173,7 +173,7 @@ graph TD;
         G --> H[json.loads#40;#41;];
 
         subgraph Database_Interaction;
-        get_connection&#40;&#41; -->|Connection Established| I;
+        get_connection -->|Connection Established| I;
         I --> J[moved_after_insert#40;#41;]
         end;
 
