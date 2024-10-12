@@ -71,7 +71,6 @@ graph LR;
 
 ## More details of main logic functions:
 ### Function Flowchart
-
 ```mermaid
 graph TD;
     A[main#40;#41;] --> |Initialize Logger| B[get_logger#40;#41;];
@@ -88,7 +87,7 @@ graph TD;
     P[Main Data] --> |Read from PostgreSQL| F;
     F --> |DuckDB Transformation| K[transform#40;#41;];
     K --> |Update PostgreSQL| L[update_records#40;#41;];
-    L --> M[update_duckdb#40;#41;];
+    L --> |Update duckdb| M[update_duckdb#40;#41;];
 
 
 ```
