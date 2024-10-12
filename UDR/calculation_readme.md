@@ -59,7 +59,35 @@ The entry point of the script that coordinates the overall process, from creatin
 Errors during database connections or operations are logged and sent to Telegram.
 In case of transaction errors (e.g., deadlock), the script retries the update process.
 
-=======================================
+```mermaid
+graph LR;
+    A[main()] --> B[get_logger()];
+    A --> C[load_dotenv()];
+    A --> D[create_pid_file()];
+    D --> E[get_connection()];
+    A --> F[read_main_data()];
+    
+    subgraph Conditional Logic
+        A --> G{Is Runtime 00:03 or 18:03?}
+        G -- Yes --> H[reset_summary_flag()];
+        G -- No --> I[Skip reset_summary_flag()];
+    end
+
+    A --> J[preparation()];
+    A --> K[transform()];
+    A --> L[update_records()];
+    A --> M[update_duckdb()];
+    A --> N[send_to_telegram()];
+
+    E --> |Connect to PostgreSQL| O[PostgreSQL Connection];
+    F --> |Read from PostgreSQL| P[Main Data];
+    K --> |Transform DuckDB| Q[DuckDB Transformation];
+    L --> |Update PostgreSQL| R[Updated Records];
+    M --> |Update DuckDB| S[DuckDB Updated];
+    N --> |Send Alerts| T[Telegram Message];
+```
+
+
 The transform(con) function in your script is responsible for performing several data transformation steps. Here's an in-depth breakdown of what it does:
 
 Key Goals of the Function:
