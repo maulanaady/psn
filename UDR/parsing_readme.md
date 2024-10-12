@@ -150,7 +150,7 @@ graph LR;
 ```    
 
 ## More details of main logic functions:  
-## Function Flowchart
+### Function Flowchart
 
 ```mermaid
 graph TD;
