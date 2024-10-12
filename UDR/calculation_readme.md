@@ -86,16 +86,10 @@ graph TD;
     end
 
     P[Main Data] --> |Read from PostgreSQL| F;
-    F --> K[transform#40;#41;];
-    A --> L[update_records#40;#41;];
-    A --> M[update_duckdb#40;#41;];
-    A --> N[send_to_telegram#40;#41;];
+    F --> |DuckDB Transformation| K[transform#40;#41;];
+    K --> |Update PostgreSQL| L[update_records#40;#41;];
+    L --> M[update_duckdb#40;#41;];
 
-   
-    K --> |Transform DuckDB| Q[DuckDB Transformation];
-    L --> |Update PostgreSQL| R[Updated Records];
-    M --> |Update DuckDB| S[DuckDB Updated];
-    N --> |Send Alerts| T[Telegram Message];
 
 ```
 
