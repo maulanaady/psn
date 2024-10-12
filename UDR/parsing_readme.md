@@ -150,33 +150,34 @@ graph LR;
 ```    
 
 ## More details of main logic functions:  
+## Function Flowchart
+
 ```mermaid
-graph TD
-    A[main()] -->|Initialize Logger| B[get_logger()]
-    A -->|Create PID File| C[create_pid_file()]
-    A -->|Check RAW Files| D[cek_raw_file()]
-    D -->|Check PROC Files| E[cek_proc_file()]
-    E -->|Process Files in Threads| F[_thread_process()]
-    F -->|Process Each File| G[process()]
+graph TD;
+    A[main()] -->|Initialize Logger| B[get_logger()];
+    A -->|Create PID File| C[create_pid_file()];
+    A -->|Check RAW Files| D[cek_raw_file()];
+    D -->|Check PROC Files| E[cek_proc_file()];
+    E -->|Process Files in Threads| F[_thread_process()];
+    F -->|Process Each File| G[process()];
 
-    G -->|Parse UDR File| H[json.loads()]
-    G -->|Insert Data| I[insert_query()]
-    G -->|Move After Insert| J[moved_after_insert()]
+    G -->|Parse UDR File| H[json.loads()];
+    G -->|Insert Data| I[insert_query()];
+    G -->|Move After Insert| J[moved_after_insert()];
 
-    A -->|Check PROC Is Empty| K[cek_proc_file_is_not_empty()]
-    A -->|Delete Old Logs| L[delete_old_file()]
-    A -->|Remove PID File| M[os.remove(pid_file_path)]
+    A -->|Check PROC Is Empty| K[cek_proc_file_is_not_empty()];
+    A -->|Delete Old Logs| L[delete_old_file()];
+    A -->|Remove PID File| M[os.remove(pid_file_path)];
 
-    subgraph File Processing
-        G --> _proc_normal
-        G --> _proc_suspended
-    end
+    subgraph File_Processing;
+        G --> _proc_normal;
+        G --> _proc_suspended;
+    end;
 
-    subgraph Database Interaction
-        I --> get_connection()
-    end
-```    
-
+    subgraph Database_Interaction;
+        I --> get_connection();
+    end;
+```
 
 **_proc_normal(data, logger)**  
 The *_proc_normal* function processes records where the terminalstatus is either normal or minor. It examines whether the usage and capacity values meet specific conditions, then constructs and returns a data dictionary with key fields related to device usage.
