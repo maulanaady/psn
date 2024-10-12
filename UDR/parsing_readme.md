@@ -168,8 +168,8 @@ graph TD;
     A -->|Remove PID File| M[os.remove&#40;pid_file_path&#41;];
 
     subgraph File_Processing;
-        G --> _proc_normal;
-        G --> _proc_suspended;
+        _proc_normal --> G;
+        _proc_suspended --> G;
         G --> H[json.loads#40;#41;];
 
         subgraph Database_Interaction;
