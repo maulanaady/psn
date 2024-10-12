@@ -76,11 +76,10 @@ graph LR;
 graph TD;
     A[main#40;#41;] --> |Initialize Logger| B[get_logger#40;#41;];
     A --> D[create_pid_file#40;#41;];
-    D --> E[get_connection#40;#41;];
     A --> F[read_main_data#40;#41;];
     
     subgraph Conditional Logic
-        A --> G{Is Runtime 00:03 or 18:03?}
+        D --> G{Is Runtime 00:03 or 18:03?}
         G -- Yes --> H[reset_summary_flag#40;#41;];
         G -- No --> I[Skip reset_summary_flag#40;#41;];
         H --> J[preparation#40;#41;];
