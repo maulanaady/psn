@@ -61,30 +61,12 @@ In case of transaction errors (e.g., deadlock), the script retries the update pr
 
 ```mermaid
 graph TD;
-    A[main#40;#41;] --> B[get_logger#40;#41;];
-    A --> C[load_dotenv#40;#41;];
-    A --> D[create_pid_file#40;#41;];
-    D --> E[get_connection#40;#41;];
-    A --> F[read_main_data#40;#41;];
-    
-    subgraph Conditional Logic
-        A --> G{Is Runtime 00:03 or 18:03?}
-        G -- Yes --> H[reset_summary_flag#40;#41;];
-        G -- No --> I[Skip reset_summary_flag#40;#41;];
-    end
+    A[Sets up logging] --> B{Checks if the script is already running};
+    B -->|Yes| C[Processes UDR Usage Calculation];
+    B -->|No| E[End];
+    C --> D[Cleans up old log files];
+    D --> E[End];
 
-    A --> J[preparation#40;#41;];
-    A --> K[transform#40;#41;];
-    A --> L[update_records#40;#41;];
-    A --> M[update_duckdb#40;#41;];
-    A --> N[send_to_telegram#40;#41;];
-
-    E --> |Connect to PostgreSQL| O[PostgreSQL Connection];
-    F --> |Read from PostgreSQL| P[Main Data];
-    K --> |Transform DuckDB| Q[DuckDB Transformation];
-    L --> |Update PostgreSQL| R[Updated Records];
-    M --> |Update DuckDB| S[DuckDB Updated];
-    N --> |Send Alerts| T[Telegram Message];
 ```
 
 
