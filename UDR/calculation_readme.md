@@ -61,23 +61,23 @@ In case of transaction errors (e.g., deadlock), the script retries the update pr
 
 ```mermaid
 graph LR;
-    A[main()] --> B[get_logger()];
-    A --> C[load_dotenv()];
-    A --> D[create_pid_file()];
-    D --> E[get_connection()];
-    A --> F[read_main_data()];
+    A[main#40;#41;] --> B[get_logger#40;#41;];
+    A --> C[load_dotenv#40;#41;];
+    A --> D[create_pid_file#40;#41;];
+    D --> E[get_connection#40;#41;];
+    A --> F[read_main_data#40;#41;];
     
     subgraph Conditional Logic
         A --> G{Is Runtime 00:03 or 18:03?}
-        G -- Yes --> H[reset_summary_flag()];
-        G -- No --> I[Skip reset_summary_flag()];
+        G -- Yes --> H[reset_summary_flag#40;#41;];
+        G -- No --> I[Skip reset_summary_flag#40;#41;];
     end
 
-    A --> J[preparation()];
-    A --> K[transform()];
-    A --> L[update_records()];
-    A --> M[update_duckdb()];
-    A --> N[send_to_telegram()];
+    A --> J[preparation#40;#41;];
+    A --> K[transform#40;#41;];
+    A --> L[update_records#40;#41;];
+    A --> M[update_duckdb#40;#41;];
+    A --> N[send_to_telegram#40;#41;];
 
     E --> |Connect to PostgreSQL| O[PostgreSQL Connection];
     F --> |Read from PostgreSQL| P[Main Data];
