@@ -172,11 +172,14 @@ graph TD;
     subgraph File_Processing;
         G --> _proc_normal;
         G --> _proc_suspended;
+
+        subgraph Database_Interaction;
+        I --> get_connection;
+        end;
+        
     end;
 
-    subgraph Database_Interaction;
-        I --> get_connection;
-    end;
+    
 ```
 
 **_proc_normal(data, logger)**  
