@@ -60,7 +60,7 @@ Errors during database connections or operations are logged and sent to Telegram
 In case of transaction errors (e.g., deadlock), the script retries the update process.
 
 ```mermaid
-graph TD;
+graph LR;
     A[Sets up logging] --> B{Checks if the script is already running};
     B -->|Yes| C[Processes UDR Usage Calculation];
     B -->|No| E[End];
@@ -69,6 +69,36 @@ graph TD;
 
 ```
 
+## More details of main logic functions:
+### Function Flowchart
+
+```mermaid
+graph TD;
+    A[main#40;#41;] --> |Initialize Logger| B[get_logger#40;#41;];
+    A --> D[create_pid_file#40;#41;];
+    D --> E[get_connection#40;#41;];
+    A --> F[read_main_data#40;#41;];
+    
+    subgraph Conditional Logic
+        A --> G{Is Runtime 00:03 or 18:03?}
+        G -- Yes --> H[reset_summary_flag#40;#41;];
+        G -- No --> I[Skip reset_summary_flag#40;#41;];
+        H --> J[preparation#40;#41;];
+    end
+
+    A --> K[transform#40;#41;];
+    A --> L[update_records#40;#41;];
+    A --> M[update_duckdb#40;#41;];
+    A --> N[send_to_telegram#40;#41;];
+
+    E --> |Connect to PostgreSQL| O[PostgreSQL Connection];
+    F --> |Read from PostgreSQL| P[Main Data];
+    K --> |Transform DuckDB| Q[DuckDB Transformation];
+    L --> |Update PostgreSQL| R[Updated Records];
+    M --> |Update DuckDB| S[DuckDB Updated];
+    N --> |Send Alerts| T[Telegram Message];
+
+```
 
 The transform(con) function in your script is responsible for performing several data transformation steps. Here's an in-depth breakdown of what it does:
 
