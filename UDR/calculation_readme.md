@@ -144,7 +144,7 @@ The transformation involves several steps:
         - Uses *QUALIFY ROW_NUMBER() OVER (...) = 1* to select the latest record.
 
     + *temp* CTE:
-        - Joins *current_proccess* (cr) with *sec_df* (prev) on *subscriber_number*.
+        - Joins *current_proccess (cr)* with *sec_df (prev)* on *subscriber_number*.
         - Uses *COALESCE* to handle missing values and assign defaults.
         - Calculates:
             + Previous Values and Anomaly Checks:
@@ -183,7 +183,7 @@ The transformation involves several steps:
                 END AS v_usage_available_tokens
                 ```  
 + Anomaly Detection:
-    - The *is_not_anomaly* macro function is used to detect anomalies in the data. It checks if the difference between the current and previous values is within acceptable limits.
+    The *is_not_anomaly* macro function is used to detect anomalies in the data. It checks if the difference between the current and previous values is within acceptable limits.
     ```sql
     CREATE MACRO IF NOT EXISTS is_not_anomaly(curr_clock, curr_value, prev_clock, prev_value) AS 
     CASE
@@ -192,7 +192,7 @@ The transformation involves several steps:
     END
     ```
 * **Final Data Preparation:**    
-    + Selects the calculated fields from temp and applies conditions:
+    - Selects the calculated fields from temp and applies conditions:
     ```sql
     SELECT
     CASE WHEN conditions THEN v_usage_anytime ELSE NULL END AS v_usage_anytime,
@@ -217,4 +217,4 @@ The transformation involves several steps:
     FROM main_df
     WHERE terminal_status NOT IN ('normal', 'minor')
     ```
-    + Assigns *summary_flag* as 1 for processed records and -1 for unprocessed records.
+    - Assigns *summary_flag* as 1 for processed records and -1 for unprocessed records.
