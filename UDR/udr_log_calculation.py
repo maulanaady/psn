@@ -5,7 +5,6 @@ import psycopg2
 from dotenv import load_dotenv
 
 def get_logger():
-    script_path = os.path.abspath(__file__)
     date_prefix = datetime.datetime.now().strftime("%Y%m%d")
     log_file = f"udr_calculation_{date_prefix}.log"
     log_path = os.path.join("/ubq_udr/udr_encoder/log/calculate/",log_file)
