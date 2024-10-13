@@ -155,8 +155,8 @@ graph LR;
 ```mermaid
 graph TD;
     A[main#40;#41;] -->|Initialize Logger| B[get_logger#40;#41;];
-    A -->|Create PID File| C[create_pid_file#40;#41;];
-    A -->|Check RAW Files| D[cek_raw_file#40;#41;];
+    B -->|Create PID File| C[create_pid_file#40;#41;];
+    C -->|Check RAW Files| D[cek_raw_file#40;#41;];
     D -->|Check PROC Files| E[cek_proc_file#40;#41;];
     E -->|Process Files in Threads| F[_thread_process#40;#41;];
     F -->|Process Each File| G[process#40;#41;];
