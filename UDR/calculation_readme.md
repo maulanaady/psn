@@ -13,17 +13,17 @@ This script performs a series of data operations, including preparation, transfo
 **Dependencies**
 The following libraries are used in the script:
 
-polars: For data manipulation and reading from databases.
-duckdb: To interact with DuckDB.
-psycopg2: For PostgreSQL database connections.
-requests: For sending HTTP requests (e.g., to Telegram).
-dotenv: For loading environment variables.
-logging: For logging events and errors.
+*polars*: For data manipulation and reading from databases.  
+*duckdb*: To interact with DuckDB.  
+*psycopg2*: For PostgreSQL database connections.  
+*requests*: For sending HTTP requests (e.g., to Telegram).  
+*dotenv*: For loading environment variables.  
+*logging*: For logging events and errors.
 
 
 ## Functions
 **get_logger()**  
-This function initializes a logging system, creating both a stream handler (for console output) and a file handler (logging to a file). The log file is named based on the current date and stored at /ubq_udr/udr_encoder/log/calculate/.
+This function initializes a logging system, creating both a stream handler (for console output) and a file handler (logging to a file). The log file is named based on the current date and stored at */ubq_udr/udr_encoder/log/calculate/* directory.
 
 **send_to_telegram(message)**  
 This function sends a message to a Telegram bot, notifying the user of key events or errors in the script. The apiToken and chatID are loaded from environment variables.
@@ -99,11 +99,11 @@ Input
 The function takes the following as input:
 
 *con*: A DuckDB connection object to execute SQL commands.  
-It reads main_df table (result of *read_main_data()* function) which contains subscriber data including usage statistics such as *overall_usage_anytime*, *overall_usage_offpeak*, and *overall_available_tokens*.
+It reads *main_df* dataframe (result of *read_main_data()* function) which contains subscriber data including usage statistics such as *overall_usage_anytime*, *overall_usage_offpeak*, and *overall_available_tokens*.
 
 The transformation involves several steps:
 
-* **Extract Data Ranges**: Retrieves the minimum and maximum end_date from main_df to log the processing period.  
+* **Extract Data Ranges**: Retrieves the minimum and maximum *end_date* from *main_df* to log the processing period.  
     ```sql
     select min(end_date) from main_df;
     select max(end_date) from main_df;
@@ -140,7 +140,7 @@ The transformation involves several steps:
 
     + *sec_df* CTE:
         - Fetches the most recent record from *sec_df_duckdb_monthly* for each *subscriber_number*  
-        **sec_df_duckdb_monthly* is duckdb table that contains previously processed records
+        ***sec_df_duckdb_monthly** is duckdb table that contains previously processed records
         - Uses *QUALIFY ROW_NUMBER() OVER (...) = 1* to select the latest record.
 
     + *temp* CTE:
