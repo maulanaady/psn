@@ -62,8 +62,8 @@ In case of transaction errors (e.g., deadlock), the script retries the update pr
 ```mermaid
 graph LR;
     A[Sets up logging] --> B{Checks if the script is already running};
-    B -->|Yes| C[Processes UDR Usage Calculation];
-    B -->|No| E[End];
+    B -->|No| C[Processes UDR Usage Calculation];
+    B -->|Yes| E[End];
     C --> D[Cleans up old log files];
     D --> E[End];
 
