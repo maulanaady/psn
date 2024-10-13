@@ -219,4 +219,4 @@ The transformation involves several steps:
     ```
     - Assigns *summary_flag* as 1 for processed records and -1 for unprocessed records.
 
-The results of this *transform()* function is used to update table in Postgres and also inserted to *sec_df_duckdb_monthly* duckdb table for next batch calculation.
+The results of this *transform()* function is used to update *bb_usage.usa_trx_usage_data_records_log* table in Postgres and also inserted to *sec_df_duckdb_monthly* duckdb table for next batch calculation.
