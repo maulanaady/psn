@@ -93,39 +93,39 @@ graph LR;
 
 ```
 
-The **transform(con)** function is core step and responsible for performing several data transformation steps. It uses SQL queries to analyze and modify the data for anomaly detection and UDR calculations.
+The *transform(con)* function is core step and responsible for performing several data transformation steps. It uses SQL queries to analyze and modify the data for anomaly detection and UDR calculations.
 
 Input
 The function takes the following as input:
 
-con: A DuckDB connection object to execute SQL commands.
-It reads main_df table (result of *read_main_data()* function) which contains subscriber data including usage statistics such as overall_usage_anytime, overall_usage_offpeak, and overall_available_tokens.
+*con*: A DuckDB connection object to execute SQL commands.  
+It reads main_df table (result of *read_main_data()* function) which contains subscriber data including usage statistics such as *overall_usage_anytime*, *overall_usage_offpeak*, and *overall_available_tokens*.
 
 The transformation involves several steps:
 
-* - **Extract Data Ranges**: Retrieves the minimum and maximum end_date from main_df to log the processing period.  
-```sql
-select min(end_date) from main_df;
-select max(end_date) from main_df;
-```
+* **Extract Data Ranges**: Retrieves the minimum and maximum end_date from main_df to log the processing period.  
+    ```sql
+    select min(end_date) from main_df;
+    select max(end_date) from main_df;
+    ```
 
-* - **Data Transformation using Window Functions**: The function uses SQL window functions (*lag()*) to calculate the previous values of subscriber data fields (*overall_usage_anytime*, *overall_usage_offpeak*, etc.). This allows the function to compute the difference between the current and previous values for anomaly detection and to calculate usage metrics.
-```python
-results = con.sql("""
-WITH current_proccess AS (
-    ...
-),
-sec_df AS (
-    ...
-),
-temp AS (
-    ...
-)
-SELECT ...
-UNION ALL
-SELECT ...
-""").pl()
-```
+* **Data Transformation using Window Functions**: The function uses SQL window functions (*lag()*) to calculate the previous values of subscriber data fields (*overall_usage_anytime*, *overall_usage_offpeak*, etc.). This allows the function to compute the difference between the current and previous values for anomaly detection and to calculate usage metrics.
+    ```python
+    results = con.sql("""
+    WITH current_proccess AS (
+        ...
+    ),
+    sec_df AS (
+        ...
+    ),
+    temp AS (
+        ...
+    )
+    SELECT ...
+    UNION ALL
+    SELECT ...
+    """).pl()
+    ```
 Let's dive into each CTE:
 
 + *current_proccess* CTE:
