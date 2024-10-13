@@ -153,7 +153,7 @@ graph LR;
 ### Function Flowchart
 
 ```mermaid
-graph TD;
+graph LR;
     A[main#40;#41;] -->|Initialize Logger| B[get_logger#40;#41;];
     B -->|Create PID File| C[create_pid_file#40;#41;];
     C -->|Check RAW Files| D[cek_raw_file#40;#41;];
