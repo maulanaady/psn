@@ -75,7 +75,7 @@ graph LR;
 graph LR;
     A[main#40;#41;] --> |Initialize Logger| B[get_logger#40;#41;];
     B --> D[create_pid_file#40;#41;];
-    D --> G{Is Runtime 00:03 or 18:03?}
+    D --> G{Is Runtime at 00:03 or 18:03?}
     
     subgraph Conditional Logic
         G -- Yes --> H[reset_summary_flag#40;#41;];
