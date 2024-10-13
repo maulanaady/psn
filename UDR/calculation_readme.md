@@ -79,10 +79,12 @@ graph TD;
     
     subgraph Conditional Logic
         G -- Yes --> H[reset_summary_flag#40;#41;];
-        G -- No --> I[Skip reset_summary_flag#40;#41;] --> F[read_main_data#40;#41;];
-        H --> J[preparation#40;#41;] --> F[read_main_data#40;#41;];
+        G -- No --> I[Skip reset_summary_flag#40;#41;];
+        H --> J[preparation#40;#41;];
     end
 
+    I --> F[read_main_data#40;#41;];
+    J --> F[read_main_data#40;#41;];
     P[Main Data] --> |Read from PostgreSQL| F;
     F --> |DuckDB Transformation| K[transform#40;#41;];
     K --> |Update PostgreSQL| L[update_records#40;#41;];
