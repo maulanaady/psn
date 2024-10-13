@@ -1,4 +1,4 @@
-# UDR Encoder Script Documentation
+# UDR Files Parsing
 
 ## Overview
 This script is designed to process UDR (Usage Data Record) files from specified directories, insert the processed data into a PostgreSQL database, and manage the file movement during and after processing. The script utilizes multi-threading for efficient file processing and implements logging and error handling, including sending notifications via Telegram.
