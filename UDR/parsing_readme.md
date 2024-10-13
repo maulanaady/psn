@@ -145,8 +145,8 @@ The *main()* function is the entry point of the script. It performs the followin
 ```mermaid
 graph LR;
     A[Sets up logging] --> B{Checks if the script is already running};
-    B -->|Yes| C[Processes UDR files];
-    B -->|No| E[End];
+    B -->|No| C[Processes UDR files];
+    B -->|Yes| E[End];
     C --> D[Cleans up old log files];
     D --> E[End];
 ```    
