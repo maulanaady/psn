@@ -139,7 +139,7 @@ file: UDR file to process.
 counter: Thread number.  
 logger: Logger for logging messages.  
 
-**main()**
+**main()**  
 The *main()* function is the entry point of the script. It performs the following steps:
 
 ```mermaid
