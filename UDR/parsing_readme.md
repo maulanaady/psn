@@ -163,9 +163,8 @@ graph TD;
 
     H -->|Insert Data| I[insert_query#40;#41;];    
 
-    A -->|Check PROC Is Empty| K[cek_proc_file_is_not_empty#40;#41;];
-    A -->|Delete Old Logs| L[delete_old_file#40;#41;];
-    A -->|Remove PID File| M[os.remove&#40;pid_file_path&#41;];
+    J -->|Check PROC Is Empty| K[cek_proc_file_is_not_empty#40;#41;];
+    K -->|Delete Old Logs| L[delete_old_file#40;#41;];
 
     subgraph File_Processing;
         G --> _proc_normal --> H[json.loads#40;#41;];
