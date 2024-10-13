@@ -1,7 +1,12 @@
-import logging,threading
-import time,logging,psycopg2
+import logging
+import threading
+import time
+import psycopg2
 from datetime import datetime, timedelta
-import shutil,os,json,sys
+import shutil
+import os
+import json
+import sys
 from psycopg2 import errors
 from dotenv import load_dotenv
 
@@ -59,9 +64,10 @@ def get_connection(username, password, counter, logger, port=5432):
             logger.error(f'Error getting connection with description {str(e)}, retrying ...')
             retries += 1
             time.sleep(retry_delay)
+            err = e
     
     if retries == max_retries:
-        send_to_telegram(f'Error getting connection with description {str(e)}', logger)
+        send_to_telegram(f'Error getting connection with description {str(err)}', logger)
         sys.exit(1)
 
 
@@ -97,7 +103,7 @@ def cek_raw_file(logger):
                 except FileNotFoundError as fnf_error:
                     logger.error(fnf_error)
     else:
-        logger.info(f'No File in UDR RAW Folders, exiting ... \n')
+        logger.info('No File in UDR RAW Folders, exiting ... \n')
         sys.exit(0)
 
 
@@ -346,7 +352,7 @@ def process(file, counter, logger):
                             f"Error decoding JSON in line: {line}. Error: {e}")
                         continue
                 insert_succeded,rowcount = insert_query(results, logger, counter, filename)
-                if (insert_succeded == True and rowcount > 0) or (insert_succeded == False and rowcount == 0):
+                if (insert_succeded and rowcount > 0) or (not insert_succeded and rowcount == 0):
                     moved_after_insert(filename, proc_path,
                                         finish_path, logger)
         except FileNotFoundError:
@@ -357,7 +363,7 @@ def process(file, counter, logger):
             f"Error: File {file} is None or does not have the .udr extension.")
 
 def main():
-    logger = get_logger(log_file=f"thread_parsing_udr")
+    logger = get_logger(log_file="thread_parsing_udr")
 
     script_path = os.path.abspath(__file__)
     filename = os.path.basename(script_path)
