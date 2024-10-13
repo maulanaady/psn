@@ -1,6 +1,11 @@
-import time,datetime,logging,sys,os
+import time
+import datetime
+import logging
+import sys
+import os
 import polars as pl
-import duckdb,logging,requests
+import duckdb
+import requests
 import psycopg2
 from dotenv import load_dotenv
 
@@ -105,11 +110,11 @@ def reset_summary_flag(start_time,con,connection,table):
         sys.exit(1)
 
 def get_connection(username, password, port=5432):
-    logging.info(f'try to get connection to UDR db ...')
+    logging.info('try to get connection to UDR db ...')
     conn_uri = f"postgresql://{username}:{password}@172.20.12.150:{port},172.20.12.177:{port}/udr?target_session_attrs=read-write"
     try:
         connection = psycopg2.connect(conn_uri)
-        logging.info(f'Connected to UDR db..')
+        logging.info('Connected to UDR db..')
         return connection
     except Exception as e:
         logging.exception(e)
@@ -330,13 +335,13 @@ def update_records(duckdb_conn,table_name,records):
         cursor.close()        
     except Exception as e:
         if isinstance(e,psycopg2.errors.DeadlockDetected):
-            logging.warning(f'Deadlock found, retrying to update records ...')
+            logging.warning('Deadlock found, retrying to update records ...')
             conn.rollback()
             conn.close()
             time.sleep(10)
             update_records(duckdb_conn,table_name,records)
         elif isinstance(e,psycopg2.errors.InFailedSqlTransaction):
-            logging.warning(f'Previously transaction is aborted, retrying to insert records')
+            logging.warning('Previously transaction is aborted, retrying to insert records')
             conn.rollback()
             conn.close()
             time.sleep(10)
