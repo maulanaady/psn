@@ -192,7 +192,7 @@ The transformation involves several steps:
     END
     ```
 * **Final Data Preparation:**    
-    - Selects the calculated fields from temp and applies conditions:
+    - Selects the calculated fields from *temp* CTE and applies conditions:
     ```sql
     SELECT
     CASE WHEN conditions THEN v_usage_anytime ELSE NULL END AS v_usage_anytime,
@@ -218,3 +218,5 @@ The transformation involves several steps:
     WHERE terminal_status NOT IN ('normal', 'minor')
     ```
     - Assigns *summary_flag* as 1 for processed records and -1 for unprocessed records.
+
+Results of this *tranform()* function is used to update table in Postgres and also inserted to *sec_df_duckdb_monthly* duckdb table for next batch calculation.
