@@ -16,4 +16,4 @@ Quick review of udr flow as follow:
 
 Beside that, every hour we have cronjob tasks that execute *php* scripts to copy tables from MariaDB CBOSS to Postgres. This tables are used with udr records to update *bb_rating.RTR_TRX_SUBSCRIBER_BALANCE* at MariaDB CBOSS
 
-More details about parsing and calculation description, is at [parsing](./parsing_readme.md) and [calculation](./calculation_readme.md)
+More details about parsing and calculation descriptions, is at [parsing](./parsing_readme.md) and [calculation](./calculation_readme.md)
