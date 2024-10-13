@@ -126,62 +126,62 @@ The transformation involves several steps:
     SELECT ...
     """).pl()
     ```
-Let's dive into each CTE:
+    Let's dive into each CTE:
 
-+ *current_proccess* CTE:
-    - Fetches current UDR data from main_df.
-    - Calculates lagged values using window functions (*lag()*) over *subscriber_number* and ordered by *end_date*.
-    - Columns calculated:
-        - lag_clock
-        - lag_usage_anytime
-        - lag_usage_offpeak
-        - lag_available_tokens
-    - Filters records where terminal_status is *normal* or *minor*.
+    + *current_proccess* CTE:
+        - Fetches current UDR data from main_df.
+        - Calculates lagged values using window functions (*lag()*) over *subscriber_number* and ordered by *end_date*.
+        - Columns calculated:
+            - lag_clock
+            - lag_usage_anytime
+            - lag_usage_offpeak
+            - lag_available_tokens
+        - Filters records where terminal_status is *normal* or *minor*.
 
-+ *sec_df* CTE:
-    - Fetches the most recent record from *sec_df_duckdb_monthly* for each *subscriber_number*  
-      *sec_df_duckdb_monthly* is duckdb table that contains previously processed records
-    - Uses *QUALIFY ROW_NUMBER() OVER (...) = 1* to select the latest record.
+    + *sec_df* CTE:
+        - Fetches the most recent record from *sec_df_duckdb_monthly* for each *subscriber_number*  
+        *sec_df_duckdb_monthly* is duckdb table that contains previously processed records
+        - Uses *QUALIFY ROW_NUMBER() OVER (...) = 1* to select the latest record.
 
-+ *temp* CTE:
-    - Joins *current_proccess* (cr) with *sec_df* (prev) on subscriber_number.
-    - Uses *COALESCE* to handle missing values and assign defaults.
-    - Calculates:
-        + Previous Values and Anomaly Checks:
-            - *prev_clock*: Previous clock value (*lag_clock* or *prev.clock*).
-            - *prev_usage*: Previous *overall_usage_anytime* value.
-            - *is_not_anomaly_usage*: Checks if the current usage is not an anomaly using the *is_not_anomaly* macro function.
+    + *temp* CTE:
+        - Joins *current_proccess* (cr) with *sec_df* (prev) on subscriber_number.
+        - Uses *COALESCE* to handle missing values and assign defaults.
+        - Calculates:
+            + Previous Values and Anomaly Checks:
+                - *prev_clock*: Previous clock value (*lag_clock* or *prev.clock*).
+                - *prev_usage*: Previous *overall_usage_anytime* value.
+                - *is_not_anomaly_usage*: Checks if the current usage is not an anomaly using the *is_not_anomaly* macro function.
 
-        + Incremental Usage Calculations:
-            - v_usage_anytime:
-                + If there is a previous clock value and the current usage is greater than or equal to the previous usage, and it's not an anomaly, then calculate the difference.
-                + If there's no previous clock, use the current *overall_usage_anytime* as the incremental usage.
-            ```sql
-            CASE
-                WHEN prev_clock IS NOT NULL THEN
-                    CASE
-                        WHEN cr.overall_usage_anytime >= prev_usage
-                        AND is_not_anomaly(cr.clock, cr.overall_usage_anytime, prev_clock, prev_usage) THEN cr.overall_usage_anytime - prev_usage
-                    ELSE 0
-                    END
-            ELSE cr.overall_usage_anytime
-            END AS v_usage_anytime
-
-            ```  
-            + *v_usage_offpeak*: Similar calculation as *v_usage_anytime* but for *overall_usage_offpeak*.
-            + *v_usage_available_tokens*:
-                - Handles cases where tokens have decreased, indicating usage.
-            ```sql
-            CASE
-                WHEN prev_clock IS NOT NULL THEN
-                    CASE
-                        WHEN cr.overall_usage_anytime < prev_usage AND cr.overall_usage_offpeak < prev_offpeak AND cr.overall_available_tokens < prev_tokens THEN 0
-                        WHEN cr.overall_available_tokens < prev_tokens AND cr.overall_available_tokens <> 0 AND is_not_anomaly(cr.clock, prev_tokens, prev_clock, cr.overall_available_tokens) THEN prev_tokens - cr.overall_available_tokens
+            + Incremental Usage Calculations:
+                - v_usage_anytime:
+                    + If there is a previous clock value and the current usage is greater than or equal to the previous usage, and it's not an anomaly, then calculate the difference.
+                    + If there's no previous clock, use the current *overall_usage_anytime* as the incremental usage.
+                ```sql
+                CASE
+                    WHEN prev_clock IS NOT NULL THEN
+                        CASE
+                            WHEN cr.overall_usage_anytime >= prev_usage
+                            AND is_not_anomaly(cr.clock, cr.overall_usage_anytime, prev_clock, prev_usage) THEN cr.overall_usage_anytime - prev_usage
                         ELSE 0
-                    END
-                ELSE 0
-            END AS v_usage_available_tokens
-            ```  
+                        END
+                ELSE cr.overall_usage_anytime
+                END AS v_usage_anytime
+
+                ```  
+                + *v_usage_offpeak*: Similar calculation as *v_usage_anytime* but for *overall_usage_offpeak*.
+                + *v_usage_available_tokens*:
+                    - Handles cases where tokens have decreased, indicating usage.
+                ```sql
+                CASE
+                    WHEN prev_clock IS NOT NULL THEN
+                        CASE
+                            WHEN cr.overall_usage_anytime < prev_usage AND cr.overall_usage_offpeak < prev_offpeak AND cr.overall_available_tokens < prev_tokens THEN 0
+                            WHEN cr.overall_available_tokens < prev_tokens AND cr.overall_available_tokens <> 0 AND is_not_anomaly(cr.clock, prev_tokens, prev_clock, cr.overall_available_tokens) THEN prev_tokens - cr.overall_available_tokens
+                            ELSE 0
+                        END
+                    ELSE 0
+                END AS v_usage_available_tokens
+                ```  
 + Anomaly Detection:
     - The *is_not_anomaly* macro function is used to detect anomalies in the data. It checks if the difference between the current and previous values is within acceptable limits.
     ```sql
