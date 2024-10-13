@@ -129,22 +129,22 @@ The transformation involves several steps:
     Let's dive into each CTE:
 
     + *current_proccess* CTE:
-        - Fetches current UDR data from main_df.
+        - Fetches current UDR data from *main_df*.
         - Calculates lagged values using window functions (*lag()*) over *subscriber_number* and ordered by *end_date*.
         - Columns calculated:
-            - lag_clock
-            - lag_usage_anytime
-            - lag_usage_offpeak
-            - lag_available_tokens
+            - *lag_clock*
+            - *lag_usage_anytime*
+            - *lag_usage_offpeak*
+            - *lag_available_tokens*
         - Filters records where terminal_status is *normal* or *minor*.
 
     + *sec_df* CTE:
         - Fetches the most recent record from *sec_df_duckdb_monthly* for each *subscriber_number*  
-        *sec_df_duckdb_monthly* is duckdb table that contains previously processed records
+        **sec_df_duckdb_monthly* is duckdb table that contains previously processed records
         - Uses *QUALIFY ROW_NUMBER() OVER (...) = 1* to select the latest record.
 
     + *temp* CTE:
-        - Joins *current_proccess* (cr) with *sec_df* (prev) on subscriber_number.
+        - Joins *current_proccess* (cr) with *sec_df* (prev) on *subscriber_number*.
         - Uses *COALESCE* to handle missing values and assign defaults.
         - Calculates:
             + Previous Values and Anomaly Checks:
@@ -191,7 +191,7 @@ The transformation involves several steps:
         ELSE FALSE
     END
     ```
-* - **Final Data Preparation:**    
+* **Final Data Preparation:**    
     + Selects the calculated fields from temp and applies conditions:
     ```sql
     SELECT
