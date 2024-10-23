@@ -1,16 +1,53 @@
+"""
+This script is designed for processing User Data Records (UDR) files
+within a specified directory structure. It performs the following main tasks:
+
+1. **File Management**:
+   - Deletes files older than five days from the RAW directory.
+   - Moves UDR files from the RAW directory to the PROC directory for processing.
+   - Moves processed UDR files to a FINISH directory.
+
+2. **Database Interaction**:
+   - Connects to a PostgreSQL database to insert parsed UDR data.
+   - Handles connection retries and logs connection errors.
+
+3. **Logging**:
+   - Logs the status of file operations, database interactions, and error messages.
+   - Sends notifications to a specified Telegram chat for critical issues or failures.
+
+4. **Multithreading**:
+   - Processes multiple UDR files concurrently using threads for efficiency.
+
+The script requires the following environment variables to be set:
+- `TELEGRAM_API_TOKEN`: API token for the Telegram Bot.
+- `TELEGRAM_CHAT_ID`: Chat ID for sending notifications.
+- `POSTGRES_USERNAME`: Username for PostgreSQL database connection.
+- `POSTGRES_PASSWORD`: Password for PostgreSQL database connection.
+
+Usage:
+- Place the UDR files in the specified RAW directory.
+- Execute the script to process the files.
+- Monitor logs for status updates and Telegram notifications for any issues.
+
+Dependencies:
+- `requests`: For sending messages to Telegram.
+- `psycopg2`: For interacting with the PostgreSQL database.
+- `dotenv`: For loading environment variables from a `.env` file.
+"""
+import json
 import logging
+import os
+import shutil
+import sys
 import threading
 import time
-import os
-import json
-import sys
-import shutil
-from datetime import datetime, timedelta
 from contextlib import contextmanager
-import requests
+from datetime import datetime, timedelta
+
 import psycopg2
-from psycopg2 import errors
+import requests
 from dotenv import load_dotenv
+from psycopg2 import errors
 
 load_dotenv()
 
@@ -24,7 +61,7 @@ def delete_old_file(dir_path):
     """Delete files older than 5 days in the specified directory.
 
     Args:
-        dir_path (str): Directory where old files will be deleted. 
+        dir_path (str): Directory where old files will be deleted.
                         Files containing the date prefix from five days ago will be removed.
     """
     old_date_prefix = (datetime.now() -
@@ -49,7 +86,7 @@ def create_pid_file(pid_file:str):
         pid_file (str): The path to the PID file to be created.
     """
     pid = str(os.getpid())
-    with open(pid_file, 'w', encoding='utf-8') as file:
+    with open(pid_file, "w", encoding="utf-8") as file:
         file.write(pid)
 
 def get_logger(log_file: str):
@@ -59,14 +96,14 @@ def get_logger(log_file: str):
         log_file (str): The log file to be created.
     """
     now = datetime.now()
-    path = '/ubq_udr/udr_encoder/log/parsing/'
+    path = "/ubq_udr/udr_encoder/log/parsing/"
     date_prefix = now.strftime("%Y%m%d")
     logfile = f"{path}/log_{log_file}_{date_prefix}.log"
     logging.basicConfig(
-        format='%(levelname)s - %(asctime)s - %(name)s - %(message)s',
-        datefmt='%A, %d %B %Y %H:%M:%S',
+        format="%(levelname)s - %(asctime)s - %(name)s - %(message)s",
+        datefmt="%A, %d %B %Y %H:%M:%S",
         handlers=[logging.StreamHandler(),
-                  logging.FileHandler(logfile, mode='a')],
+                  logging.FileHandler(logfile, mode="a")],
         level=logging.DEBUG)
     return logging.getLogger(__name__)
 
@@ -108,11 +145,11 @@ def get_connection(username, password, counter, logger, port=5432):
             break  # Exit the loop if connection is successful
         except Exception as e:
             attempts += 1
-            logger.error(f'Error connecting to database (attempt {attempts}): {str(e)}')
+            logger.error(f"Error connecting to database (attempt {attempts}): {str(e)}")
             if attempts < max_retries:
                 time.sleep(retry_delay)  # Wait before retrying
             else:
-                send_to_telegram(f'Error getting connection with description: {str(e)}', logger)
+                send_to_telegram(f"Error getting connection with description: {str(e)}", logger)
                 raise
         finally:
             if conn:
@@ -122,9 +159,9 @@ def get_connection(username, password, counter, logger, port=5432):
 def sort_by_modified_time(filename):
     """Extract and return the modification time from a given filename.
 
-    The function assumes the filename follows a specific format where the 
-    modification time is encoded at the end, following an underscore and 
-    preceding the file extension. The time is expected to be in the 
+    The function assumes the filename follows a specific format where the
+    modification time is encoded at the end, following an underscore and
+    preceding the file extension. The time is expected to be in the
     format 'YYYYMMDDHHMM'.
 
     Args:
@@ -136,16 +173,16 @@ def sort_by_modified_time(filename):
     Raises:
         ValueError: If the time string cannot be parsed into a datetime object.
     """
-    time_str = filename.split('_')[-1].split('.')[0]
-    return datetime.strptime(time_str, '%Y%m%d%H%M')
+    time_str = filename.split("_")[-1].split(".")[0]
+    return datetime.strptime(time_str, "%Y%m%d%H%M")
 
 
 def cek_raw_file(logger):
     """Move UDR files from the RAW directory to the PROC directory.
 
-    The function searches for files with the '.udr' extension in the RAW 
-    directory, sorts them by their modified time, and moves a maximum of 
-    `max_file` files to the PROC directory. The function logs the process, 
+    The function searches for files with the '.udr' extension in the RAW
+    directory, sorts them by their modified time, and moves a maximum of
+    `max_file` files to the PROC directory. The function logs the process,
     including any errors that occur during the file operations.
 
     Args:
@@ -154,7 +191,7 @@ def cek_raw_file(logger):
     Raises:
         SystemExit: Exits the program if no UDR files are found in the RAW directory.
     """
-    logger.info('== Try to read file in path RAW ==')
+    logger.info("== Try to read file in path RAW ==")
     max_file = 35
 
     file_list = [file for file in os.listdir(
@@ -171,11 +208,11 @@ def cek_raw_file(logger):
             file_proc = os.path.join(PROC_PATH, os.path.basename(file))
             try:
                 shutil.move(file_src, file_proc)
-                logger.info(f'File {file} success move to {PROC_PATH}')
+                logger.info(f"File {file} success move to {PROC_PATH}")
             except FileNotFoundError as fnf_error:
                 logger.error(fnf_error)
     else:
-        logger.info('No File in UDR RAW Folders, exiting.')
+        logger.info("No File in UDR RAW Folders, exiting.")
         sys.exit(0)
 
 
@@ -206,14 +243,14 @@ def timestamp_to_date(timestamp):
     Returns:
         str: A formatted date string in 'YYYY-MM-DD HH:MM:SS' format.
     """
-    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _proc_normal(data, logger):
     """Process normal UDR data.
 
-    This function checks the usage and capacity of the data. If the usage 
-    and capacity conditions are met, it constructs a result dictionary 
+    This function checks the usage and capacity of the data. If the usage
+    and capacity conditions are met, it constructs a result dictionary
     and logs the processing status.
 
     Args:
@@ -221,29 +258,29 @@ def _proc_normal(data, logger):
         logger (logging.Logger): A logger instance for logging information.
 
     Returns:
-        dict or None: A dictionary with processed data if conditions are met, 
+        dict or None: A dictionary with processed data if conditions are met,
                       None otherwise.
     """
-    clock = int(str(data['lastpolledtime'])[0:10])
+    clock = int(str(data["lastpolledtime"])[0:10])
     if (
-    (data['overallcapacity'] > 1 and data['overallusage'] > 1) or
-    (data['offpeakoverallcapacity'] > 1 and data['offpeakoverallusage'] > 1)
+    (data["overallcapacity"] > 1 and data["overallusage"] > 1) or
+    (data["offpeakoverallcapacity"] > 1 and data["offpeakoverallusage"] > 1)
     ):
         rdata = {
-            "sbcNum": data['deviceid'],
-            "clock": str(data['lastpolledtime'])[0:10],
-            "ns": str(data['lastpolledtime'])[10:13],
+            "sbcNum": data["deviceid"],
+            "clock": str(data["lastpolledtime"])[0:10],
+            "ns": str(data["lastpolledtime"])[10:13],
             "endTime":  timestamp_to_date(clock),
-            "capacityAnytime": data['overallcapacity'],
-            "capacityOffPeak": data['offpeakoverallcapacity'],
-            "overAllUsageAnytime": data['overallusage'],
-            "overAllUsageOffPeak": data['offpeakoverallusage'],
-            "overAllAvailTokens": data['availtokens'],
-            "fapStatus": data['fapstatus'],
-            "terminalStatus": data['terminalstatus'],
-            "inPeakPeriod": data['inpeakperiod'],
-            "esn": data.get('esn'),
-            "spName": data.get('serviceplan'),
+            "capacityAnytime": data["overallcapacity"],
+            "capacityOffPeak": data["offpeakoverallcapacity"],
+            "overAllUsageAnytime": data["overallusage"],
+            "overAllUsageOffPeak": data["offpeakoverallusage"],
+            "overAllAvailTokens": data["availtokens"],
+            "fapStatus": data["fapstatus"],
+            "terminalStatus": data["terminalstatus"],
+            "inPeakPeriod": data["inpeakperiod"],
+            "esn": data.get("esn"),
+            "spName": data.get("serviceplan"),
         }
         logger.info(f"""ID {data['deviceid']}: PolledTime:
                      {timestamp_to_date(clock)} Status: {data['terminalstatus']} .... OK""")
@@ -256,7 +293,7 @@ def _proc_normal(data, logger):
 def _proc_suspended(data):
     """Process suspended UDR data.
 
-    Constructs a result dictionary from the given data for suspended 
+    Constructs a result dictionary from the given data for suspended
     devices, setting default values where necessary.
 
     Args:
@@ -265,22 +302,22 @@ def _proc_suspended(data):
     Returns:
         dict: A dictionary with processed suspended device data.
     """
-    clock = int(str(data['lastpolledtime'])[0:10])
+    clock = int(str(data["lastpolledtime"])[0:10])
     rdata = {
-        "sbcNum": data['deviceid'],
-        "clock": str(data['lastpolledtime'])[0:10],
-        "ns": str(data['lastpolledtime'])[10:13] or '0',
+        "sbcNum": data["deviceid"],
+        "clock": str(data["lastpolledtime"])[0:10],
+        "ns": str(data["lastpolledtime"])[10:13] or "0",
         "endTime":  timestamp_to_date(clock),
-        "capacityAnytime": data['overallcapacity'],
-        "capacityOffPeak": data['offpeakoverallcapacity'],
-        "overAllUsageAnytime": data['overallusage'],
-        "overAllUsageOffPeak": data['offpeakoverallusage'],
-        "overAllAvailTokens": data['availtokens'],
-        "fapStatus": data['fapstatus'],
-        "terminalStatus": data['terminalstatus'],
-        "inPeakPeriod": data['inpeakperiod'],
-        "esn": data.get('esn'),
-        "spName": data.get('serviceplan')
+        "capacityAnytime": data["overallcapacity"],
+        "capacityOffPeak": data["offpeakoverallcapacity"],
+        "overAllUsageAnytime": data["overallusage"],
+        "overAllUsageOffPeak": data["offpeakoverallusage"],
+        "overAllAvailTokens": data["availtokens"],
+        "fapStatus": data["fapstatus"],
+        "terminalStatus": data["terminalstatus"],
+        "inPeakPeriod": data["inpeakperiod"],
+        "esn": data.get("esn"),
+        "spName": data.get("serviceplan")
     }
     return rdata
 
@@ -288,7 +325,7 @@ def _proc_suspended(data):
 def _thread_process(proc_file, logger):
     """Start and manage threads to process UDR files.
 
-    This function creates threads for processing each UDR file in 
+    This function creates threads for processing each UDR file in
     the specified list and waits for all threads to complete.
 
     Args:
@@ -298,7 +335,7 @@ def _thread_process(proc_file, logger):
     logger.info("Starting threads for processing UDR files.")
 
     threads = []
-    threads = [threading.Thread(target=process, args=(file, i, logger)) 
+    threads = [threading.Thread(target=process, args=(file, i, logger))
                for i, file in enumerate(proc_file)]
 
     for thread in threads:
@@ -310,7 +347,7 @@ def _thread_process(proc_file, logger):
 def moved_after_insert(filename, procpath, finishpath, logger):
     """Move a processed UDR file to a finished directory.
 
-    This function copies a file from the PROC directory to a finish 
+    This function copies a file from the PROC directory to a finish
     directory and removes the original file.
 
     Args:
@@ -363,14 +400,14 @@ def send_to_telegram(message, logger):
     Raises:
         Exception: Any exceptions raised during the request to the Telegram API.
     """
-    api_token = os.getenv('TELEGRAM_API_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    api_token = os.getenv("TELEGRAM_API_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
-    api_url = f'https://api.telegram.org/bot{api_token}/sendMessage'
+    api_url = f"https://api.telegram.org/bot{api_token}/sendMessage"
     try:
         logger.info(message)
         requests.post(
-            api_url, json={'chat_id': chat_id, 'text': f'CRONJOB udr_parsing - {message}'},
+            api_url, json={"chat_id": chat_id, "text": f"CRONJOB udr_parsing - {message}"},
             timeout=10)
     except requests.Timeout as e:
         logger.warning(f"Request to Telegram API timed out: {e}")
@@ -402,8 +439,8 @@ def cek_proc_file_is_not_empty(procpath, logger):
 def insert_query(results, logger, counter, filename):
     """Insert parsed UDR data into a PostgreSQL database.
 
-    This function constructs an SQL insert query from the provided results 
-    and executes it on the database. It handles potential deadlock and 
+    This function constructs an SQL insert query from the provided results
+    and executes it on the database. It handles potential deadlock and
     transaction errors, retrying as necessary.
 
     Args:
@@ -415,8 +452,8 @@ def insert_query(results, logger, counter, filename):
     Raises:
         Exception: Raises any exception encountered during the database operation.
     """
-    pg_username = os.getenv('POSTGRES_USERNAME')
-    pg_password = os.getenv('POSTGRES_PASSWORD')
+    pg_username = os.getenv("POSTGRES_USERNAME")
+    pg_password = os.getenv("POSTGRES_PASSWORD")
 
     query = """INSERT INTO bb_usage.usa_trx_usage_data_records
             (subscriber_number,
@@ -443,7 +480,7 @@ def insert_query(results, logger, counter, filename):
             logger.info(f"parsed rowcount: {len(results)} for filename {filename}")
             if len(results) > 0:
                 with conn.cursor() as cursor:
-                    args_str = ','.join(
+                    args_str = ",".join(
                                 cursor.mogrify(
                                     "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", value
                                 ).decode("utf-8") for value in results
@@ -455,7 +492,7 @@ def insert_query(results, logger, counter, filename):
                     resp = True
         except Exception as e:
             if isinstance(e,errors.DeadlockDetected):
-                logger.warning(f'Deadlock found, retrying to insert records for file {filename}')
+                logger.warning(f"Deadlock found, retrying to insert records for file {filename}")
                 time.sleep(3)
                 conn.rollback()
                 return  insert_query(results, logger, counter, filename)
@@ -473,25 +510,25 @@ def insert_query(results, logger, counter, filename):
 
 def is_valid_udr_file(file):
     """Check if the file is a valid UDR file."""
-    return file is not None and file.endswith('.udr')
+    return file is not None and file.endswith(".udr")
 
 def process_line(line, filename, results, logger):
     """Process a single line from the UDR file."""
     try:
         jline = json.loads(line)
-        terminal_status = jline.get('terminalstatus', "")
+        terminal_status = jline.get("terminalstatus", "")
         data = process_terminal_status(jline, terminal_status, logger)
         if data is not None:
-            data.update({'udrfilename': filename, 'createdby': "netmon"})
+            data.update({"udrfilename": filename, "createdby": "netmon"})
             results.append(tuple(data.values()))
     except json.JSONDecodeError as e:
         logger.warning(f"Error decoding JSON in line: {line}. Error: {e}")
 
 def process_terminal_status(jline, terminal_status, logger):
     """Determine processing function based on terminal status."""
-    if terminal_status in {'normal', 'minor'}:
+    if terminal_status in {"normal", "minor"}:
         return _proc_normal(jline, logger)
-    if terminal_status in {'critical', 'suspended'}:
+    if terminal_status in {"critical", "suspended"}:
         return _proc_suspended(jline)
     logger.info("DATA False")
     return None
@@ -499,10 +536,10 @@ def process_terminal_status(jline, terminal_status, logger):
 def process(file, counter, logger):
     """Process a UDR file and insert its data into a PostgreSQL database.
 
-    This function reads a UDR file, parses its contents, and processes each 
-    line based on the terminal status. It collects valid data and calls 
-    `insert_query` to insert the processed results into the database. 
-    After successful insertion, it moves the processed file to a finished 
+    This function reads a UDR file, parses its contents, and processes each
+    line based on the terminal status. It collects valid data and calls
+    `insert_query` to insert the processed results into the database.
+    After successful insertion, it moves the processed file to a finished
     directory.
 
     Args:
@@ -523,7 +560,7 @@ def process(file, counter, logger):
     results = []
 
     try:
-        with open(path_file, 'r',encoding='utf-8') as files:
+        with open(path_file, "r",encoding="utf-8") as files:
             for line in files:
                 process_line(line.lower(), file, results, logger)
 
@@ -537,9 +574,9 @@ def process(file, counter, logger):
 def main():
     """Main function to run the UDR encoding process.
 
-    This function initializes logging, checks for running instances, 
-    and coordinates the overall process of checking raw files, processing 
-    UDR files in threads, and inserting data into the database. 
+    This function initializes logging, checks for running instances,
+    and coordinates the overall process of checking raw files, processing
+    UDR files in threads, and inserting data into the database.
     It logs the duration of the process and handles exceptions.
 
     Raises:
@@ -549,7 +586,7 @@ def main():
 
     script_path = os.path.abspath(__file__)
     filename = os.path.basename(script_path)
-    pid_file_path = f'/tmp/{filename}.pid'
+    pid_file_path = f"/tmp/{filename}.pid"
 
     if os.path.exists(pid_file_path):
         logging.info("Script is already running. Exiting.\n\n")
@@ -567,7 +604,7 @@ def main():
 
         _thread_process(proc_file, logger)
         cek_proc_file_is_not_empty(PROC_PATH, logger)
-        delete_old_file('/ubq_udr/udr_encoder/log')
+        delete_old_file("/ubq_udr/udr_encoder/log")
 
         end = time.perf_counter()
         duration = str(timedelta(seconds=end-start))
