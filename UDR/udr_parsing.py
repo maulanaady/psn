@@ -72,7 +72,7 @@ def get_logger(log_file: str):
 
 
 @contextmanager
-def get_connection(username, password, counter, logger, port=5432, max_retries=10, retry_delay=3):    
+def get_connection(username, password, counter, logger, port=5432):
     """Context manager for establishing a PostgreSQL connection with retries.
     Args:
         username (str): The username to connect to the database.
@@ -92,10 +92,14 @@ def get_connection(username, password, counter, logger, port=5432, max_retries=1
         with a delay of `retry_delay` seconds between attempts. If all attempts fail,
         a message will be sent to a Telegram bot, and the program will exit.
     """
-    conn_uri = f"postgresql://{username}:{password}@172.20.12.150:{port},172.20.12.177:{port}/udr?target_session_attrs=read-write"
+    max_retries, retry_delay = 10, 3
+    conn_uri = (
+        f"postgresql://{username}:{password}@"
+        f"172.20.12.150:{port},"
+        f"172.20.12.177:{port}/udr?target_session_attrs=read-write"
+    )
     conn = None
     attempts = 0
-    
     while attempts < max_retries:
         try:
             conn = psycopg2.connect(conn_uri)
@@ -108,8 +112,8 @@ def get_connection(username, password, counter, logger, port=5432, max_retries=1
             if attempts < max_retries:
                 time.sleep(retry_delay)  # Wait before retrying
             else:
-                send_to_telegram(f'Error getting connection with description: {str(e)}', logger)  # Notify about failure
-                raise  # Raise the exception after max retries
+                send_to_telegram(f'Error getting connection with description: {str(e)}', logger)
+                raise
         finally:
             if conn:
                 conn.close()
@@ -157,7 +161,10 @@ def cek_raw_file(logger):
         RAW_PATH) if file.endswith(".udr")]
 
     if file_list:
-        logger.info(f"Found {len(file_list)} UDR files, moving up to {max_file} files to PROC path.")
+        logger.info(
+        f"Found {len(file_list)} UDR files, "
+        f"moving up to {max_file} files to PROC path."
+        )
         file_list.sort(key=sort_by_modified_time)
         for file in file_list[:max_file]:
             file_src = os.path.join(RAW_PATH, os.path.basename(file))
@@ -219,7 +226,7 @@ def _proc_normal(data, logger):
     """
     clock = int(str(data['lastpolledtime'])[0:10])
     if (
-    (data['overallcapacity'] > 1 and data['overallusage'] > 1) or 
+    (data['overallcapacity'] > 1 and data['overallusage'] > 1) or
     (data['offpeakoverallcapacity'] > 1 and data['offpeakoverallusage'] > 1)
     ):
         rdata = {
@@ -291,7 +298,8 @@ def _thread_process(proc_file, logger):
     logger.info("Starting threads for processing UDR files.")
 
     threads = []
-    threads = [threading.Thread(target=process, args=(file, i, logger)) for i, file in enumerate(proc_file)]
+    threads = [threading.Thread(target=process, args=(file, i, logger)) 
+               for i, file in enumerate(proc_file)]
 
     for thread in threads:
         thread.start()
