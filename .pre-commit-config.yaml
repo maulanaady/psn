@@ -64,4 +64,4 @@ repos:
       - "--skip"
       - "B101,B301,B324,B403,B404,B603"
       - "--severity-level"
-      - "high"  # TODO: remove this line when we fix all the issues
+      - "medium"  # TODO: remove this line when we fix all the issues
