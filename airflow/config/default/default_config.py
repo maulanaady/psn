@@ -1,3 +1,4 @@
+from __future__ import annotations
 from airflow import DAG
 from default.custom_hook import AlertHook
 
