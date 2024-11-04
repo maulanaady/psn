@@ -1,4 +1,5 @@
 apache-airflow-providers-telegram==4.6.0
+bandit==1.7.10
 black==24.10.0
 duckdb==1.1.2
 Jinja2==3.1.4
