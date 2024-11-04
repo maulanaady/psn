@@ -3,7 +3,7 @@
   "image": "apache/airflow:2.10.2-python3.9",
   "runArgs": [
     "--env-file",
-    ".env"
+    ".env.sample"
   ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
