@@ -1,18 +1,38 @@
+default_stages: [pre-commit, pre-push]
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v5.0.0
   hooks:
-  - id: check-yaml
+  - id: check-merge-conflict
+    name: Check that merge conflicts are not being committed
+  - id: debug-statements
+    name: Detect accidentally committed debug statements
+  - id: detect-private-key
+    name: Detect if private key is added to the repository
   - id: end-of-file-fixer
+    name: Make sure that there is an empty line at the end
+  - id: mixed-line-ending
+    name: Detect if mixed line ending is used (\r vs. \r\n)
+  - id: check-executables-have-shebangs
+    name: Check that executables have shebang
   - id: trailing-whitespace
+    name: Remove trailing whitespace at end of line
+  - id: pretty-format-json
+    name: Format JSON files
+    args:
+      - --autofix
+      - --no-sort-keys
+      - --indent
+      - "4"
+  - id: check-yaml
   - id: check-added-large-files
   - id: check-ast
-  - id: pretty-format-json
-    args: [
-      --autofix,
-      --no-sort-keys
-    ]
   - id: requirements-txt-fixer
+
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.10.0
+  hooks:
+    - id: python-no-log-warn
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.7.1
@@ -27,3 +47,7 @@ repos:
   rev: 22.10.0
   hooks:
     - id: black
+
+# - repo: local
+#   hooks:
+#     - id:

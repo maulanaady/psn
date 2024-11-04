@@ -1,3 +1,4 @@
+from __future__ import annotations
 import psycopg2
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
