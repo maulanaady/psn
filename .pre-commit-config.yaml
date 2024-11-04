@@ -57,7 +57,7 @@ repos:
     language: python
     language_version: python3
     types: [ python ]
-    additional_dependencies: ['bandit==1.7.6']
+    additional_dependencies: ['bandit==1.7.10']
     require_serial: true
     files: ^airflow/.*
     args:
@@ -65,3 +65,21 @@ repos:
       - "B101,B301,B324,B403,B404,B603"
       - "--severity-level"
       - "medium"
+  - id: pylint
+    name: pylint
+    description: "Pylint is a static code analyser for Python 2 or 3."
+    entry: pylint
+    language: python
+    language_version: python3
+    types: [ python ]
+    additional_dependencies: ['pylint==3.3.1']
+    require_serial: true
+    files: ^airflow/.*
+    exclude:
+      airflow/example_dags/.*
+    args:
+      # Use pylint only for the specific check, which are not available into the ruff
+      - "--disable=all"
+      # W0133: "Exception statement has no effect"
+      # see: https://github.com/astral-sh/ruff/issues/10145
+      - "--enable=W0133"
