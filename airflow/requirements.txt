@@ -1,0 +1,12 @@
+apache-airflow-providers-telegram==4.6.0
+black==24.10.0
+duckdb==1.1.2
+Jinja2==3.1.4
+matplotlib==3.9.2
+mysql-connector-python==9.1.0
+pandas==2.1.4
+pre-commit==4.0.1
+pylint==3.3.1
+pytest==8.3.3
+ruff==0.7.2
+sqlfluff==3.2.5
