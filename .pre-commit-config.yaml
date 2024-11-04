@@ -83,3 +83,12 @@ repos:
       # W0133: "Exception statement has no effect"
       # see: https://github.com/astral-sh/ruff/issues/10145
       - "--enable=W0133"
+  # - id: mypy-airflow
+  #   stages: [ 'manual' ]
+  #   name: Run mypy for airflow (manual)
+  #   language: python
+  #   entry: ./airflow/ci/pre_commit/mypy_folder.py airflow
+  #   pass_filenames: false
+  #   files: ^.*\.py$
+  #   require_serial: true
+  #   additional_dependencies: [ 'rich>=12.4.4' ]
