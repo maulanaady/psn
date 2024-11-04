@@ -48,6 +48,20 @@ repos:
   hooks:
     - id: black
 
-# - repo: local
-#   hooks:
-#     - id:
+- repo: local
+  hooks:
+  - id: bandit
+    name: bandit
+    description: "Bandit is a tool for finding common security issues in Python code"
+    entry: bandit
+    language: python
+    language_version: python3
+    types: [ python ]
+    additional_dependencies: ['bandit==1.7.6']
+    require_serial: true
+    files: ^airflow/.*
+    args:
+      - "--skip"
+      - "B101,B301,B324,B403,B404,B603"
+      - "--severity-level"
+      - "high"  # TODO: remove this line when we fix all the issues
