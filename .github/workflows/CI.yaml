@@ -20,11 +20,11 @@ jobs:
     container:
       image: apache/airflow:2.10.2-python3.9
       volumes:
-        - airflow/config:/opt/airflow/config
-        - airflow/dags:/opt/airflow/dags
-        - airflow/tests:/opt/airflow/tests
-        - airflow/include:/opt/airflow/include
-        - airflow/requirements.txt:/opt/airflow/requirements.txt
+        - ${{ github.workspace }}/airflow/config:/opt/airflow/config
+        - ${{ github.workspace }}/airflow/dags:/opt/airflow/dags
+        - ${{ github.workspace }}/airflow/tests:/opt/airflow/tests
+        - ${{ github.workspace }}/airflow/include:/opt/airflow/include
+        - ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt
 
     steps:
       - name: Check out the repository
