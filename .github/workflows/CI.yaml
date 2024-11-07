@@ -29,9 +29,6 @@ jobs:
       - name: Check requirements file
         run: ls /opt/airflow/tests/
 
-      - name: Copy requirements.txt
-        run: cp $GITHUB_WORKSPACE/airflow/requirements.txt /opt/airflow/requirements.txt
-
       - name: Install dependencies for airflow project
         run: |
           cd /opt/airflow/tests
