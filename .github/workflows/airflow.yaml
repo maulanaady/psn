@@ -1,0 +1,38 @@
+name: CI Pipeline
+
+on:
+  push:
+    paths:
+      - 'airflow/**'
+    branches:
+      - main
+      - dev
+  pull_request:
+    paths:
+      - 'airflow/**'
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies for airflow project
+        run: |
+          cd airflow
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd airflow
+          pytest tests/dags
