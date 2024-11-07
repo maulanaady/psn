@@ -3,8 +3,8 @@ import logging
 import pendulum
 from default.default_config import DefaultDAG
 from default.custom_connection import ConnectionHook
-from airflow.operators.empty import EmptyOperator
 from airflow.decorators import task
+
 
 with DefaultDAG(
     dag_id=os.path.basename(__file__).replace(".pyc", "").replace(".py", ""),
@@ -16,7 +16,6 @@ with DefaultDAG(
     max_active_runs=1,
     catchup=False,
 ) as dag:
-    start = EmptyOperator(task_id="start")
 
     @task()
     def monitoring_move_udr(conn_id, uri, **context):
@@ -30,8 +29,4 @@ with DefaultDAG(
             DefaultDAG.exception_alert(err, **context)
             logging.exception(err)
 
-    monitoring_udr = monitoring_move_udr("udr", uri=True)
-
-    t3 = EmptyOperator(task_id="end")
-
-    start >> monitoring_udr >> t3
+    monitoring_move_udr("udr", uri=True)
