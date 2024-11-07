@@ -1,4 +1,4 @@
-name: Airflow CI Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -15,10 +15,15 @@ on:
       - dev
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-    container:
-      image: apache/airflow:2.10.2-python3.9
+    container: apache/airflow:2.10.2-python3.9
+    volumes:
+      - airflow/dags:/opt/airflow/dags
+      - airflow/config:/opt/airflow/config
+      - airflow/include:/opt/airflow/include
+      - airflow/tests:/opt/airflow/tests
+      - airflow/requirements.txt:/opt/airflow/requirements.txt
 
     steps:
       - name: Check out the repository
@@ -26,10 +31,10 @@ jobs:
 
       - name: Install dependencies for airflow project
         run: |
-          cd airflow
+          cd /opt/airflow
           pip install -r requirements.txt
 
       - name: Run tests
         run: |
-          cd airflow
+          cd /opt/airflow
           pytest tests/dags
