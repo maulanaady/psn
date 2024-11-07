@@ -1,5 +1,5 @@
-"apache-airflow[celery]==2.10.2" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.2/constraints-3.9.txt"
 apache-airflow-providers-telegram==4.6.0
+apache-airflow[celery]==2.10.2 --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.2/constraints-3.9.txt"
 bandit==1.7.10
 black==24.10.0
 duckdb==1.1.2
