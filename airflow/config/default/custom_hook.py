@@ -18,7 +18,7 @@ class AlertHook(BaseHook):
         self._topic_id = json.loads(config.extra).get("message_thread_id", None)
         return self._token, self._chat_id, self._topic_id
 
-    def _send_message(self, text):
+    def send_message(self, text):
         """Send telegram message using defined connection"""
         token, chat_id, topic_id = self._get_conn()
         base_url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -32,7 +32,7 @@ class AlertHook(BaseHook):
         else:
             params = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
         try:
-            response = requests.post(base_url, params=params)
+            response = requests.post(base_url, params=params, timeout=10)
             response.raise_for_status()
             logging.info("Message sent successfully")
         except requests.exceptions.RequestException as e:
@@ -46,7 +46,7 @@ class AlertHook(BaseHook):
 <b>Run</b>: <b>{kwargs['dag_run'].run_id}</b>
 <b>Task</b>: <b>{kwargs['task_instance_key_str']}</b>
 <b>Execution time</b>: <b>{kwargs['data_interval_end'].in_tz("Asia/Jakarta").strftime("%Y-%m-%d, %H:%M:%S")}</b>"""
-        self._send_message(text)
+        self.send_message(text)
 
     def exception_alert(self, err, **kwargs):
         """Callback function that is called when an exception
@@ -59,7 +59,7 @@ class AlertHook(BaseHook):
 <b>Execution time</b>: <b>{(kwargs['data_interval_end']).in_tz("Asia/Jakarta").strftime("%Y-%m-%d, %H:%M:%S")}</b>"""
         if err is not None:
             text = text + f"""<b>Error Description</b>: <b>{err}</b>"""
-        self._send_message(text)
+        self.send_message(text)
 
     def sla_miss_callback(self, status, kwargs):
         """Callback function that is called when an DAG SLA is missed."""
@@ -71,4 +71,4 @@ class AlertHook(BaseHook):
         <b>SLA(s):</b> {kwargs['slas']}
         <b>Blocking Task Instances:</b> {kwargs['blocking_tis']}
         """
-        self._send_message(text)
+        self.send_message(text)
