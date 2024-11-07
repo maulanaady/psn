@@ -25,12 +25,13 @@ jobs:
       # Step 2: Set up Docker container and mount volumes
       - name: Set up Docker container and mount volumes
         run: |
-          docker run -v ${{ github.workspace }}/airflow/config:/opt/airflow/config \
+          docker run --rm --entrypoint /bin/bash \
+                     -v ${{ github.workspace }}/airflow/config:/opt/airflow/config \
                      -v ${{ github.workspace }}/airflow/dags:/opt/airflow/dags \
                      -v ${{ github.workspace }}/airflow/tests:/opt/airflow/tests \
                      -v ${{ github.workspace }}/airflow/include:/opt/airflow/include \
                      -v ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt \
-                     apache/airflow:2.10.2-python3.9 /bin/bash -c "
+                     apache/airflow:2.10.2-python3.9 -c "
                        pip install --no-cache-dir -r /opt/airflow/requirements.txt &&
                        pytest /opt/airflow/tests/dags
                      "
