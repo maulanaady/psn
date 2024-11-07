@@ -31,7 +31,9 @@ with DefaultDAG(
             start_time,
             end_time,
         )
-        with open("./include/sql/read_source_data.sql", "r") as f:
+        with open(
+            "/opt/airflow/include/sql/ubiqudiruma/read_source_data.sql", "r"
+        ) as f:
             sql_script = f.read()
         sql_script = sql_script.replace("{start_time}", start_time).replace(
             "{end_time}", end_time
@@ -64,7 +66,9 @@ with DefaultDAG(
             "%Y-%m-%d %H:%M:%S"
         )
         end_time = data_interval_end.in_tz("Asia/Jakarta").strftime("%Y-%m-%d %H:%M:%S")
-        with open("./include/sql/diruma_usage_calculation.sql", "r") as f:
+        with open(
+            "/opt/airflow/include/sql/ubiqudiruma/diruma_usage_calculation.sql", "r"
+        ) as f:
             sql_script = f.read()
         sql_script = sql_script.replace("{start_time}", start_time).replace(
             "{end_time}", end_time
