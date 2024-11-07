@@ -21,7 +21,11 @@ DAG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "dags/**/*.py")
 DAG_FILES = glob.glob(DAG_PATH, recursive=True)  # Ensure recursive search
 
 # Exclude airflow_log_cleanup.py DAG file
-# DAG_FILES = [dag_file for dag_file in DAG_FILES if not dag_file.endswith('airflow_log_cleanup.py')]
+DAG_FILES = [
+    dag_file
+    for dag_file in DAG_FILES
+    if not dag_file.endswith("airflow_log_cleanup.py")
+]
 
 # Updated regex pattern to allow snake_case, and patterns like xxx_xx
 TASK_ID_REGEX = re.compile(r"^[a-z0-9]+(_[a-z0-9]+)*$")
