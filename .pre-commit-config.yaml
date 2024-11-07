@@ -1,0 +1,102 @@
+default_stages: [pre-commit, pre-push]
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-merge-conflict
+    name: Check that merge conflicts are not being committed
+  - id: debug-statements
+    name: Detect accidentally committed debug statements
+  - id: detect-private-key
+    name: Detect if private key is added to the repository
+  - id: end-of-file-fixer
+    name: Make sure that there is an empty line at the end
+  - id: mixed-line-ending
+    name: Detect if mixed line ending is used (\r vs. \r\n)
+  - id: check-executables-have-shebangs
+    name: Check that executables have shebang
+  - id: trailing-whitespace
+    name: Remove trailing whitespace at end of line
+  - id: pretty-format-json
+    name: Format JSON files
+    args:
+      - --autofix
+      - --no-sort-keys
+      - --indent
+      - "4"
+  - id: check-yaml
+  - id: check-added-large-files
+  - id: check-ast
+  - id: requirements-txt-fixer
+
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.10.0
+  hooks:
+    - id: python-no-log-warn
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.7.1
+  hooks:
+    - id: ruff
+      types_or: [ python, pyi ]
+      args: [ --fix ]
+    - id: ruff-format
+      types_or: [ python, pyi ]
+
+- repo: https://github.com/psf/black
+  rev: 22.10.0
+  hooks:
+    - id: black
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.13.0  # Use the sha / tag you want to point at
+  hooks:
+    - id: mypy
+      args: [--strict, --ignore-missing-imports]
+      additional_dependencies: [tokenize-rt==3.2.0]
+      stages: [manual]
+
+- repo: local
+  hooks:
+  - id: bandit
+    name: bandit
+    description: "Bandit is a tool for finding common security issues in Python code"
+    entry: bandit
+    language: python
+    language_version: python3
+    types: [ python ]
+    additional_dependencies: ['bandit==1.7.10']
+    require_serial: true
+    files: ^airflow/.*
+    args:
+      - "--skip"
+      - "B101,B301,B324,B403,B404,B603"
+      - "--severity-level"
+      - "medium"
+  - id: pylint
+    name: pylint
+    description: "Pylint is a static code analyser for Python 2 or 3."
+    entry: pylint
+    language: python
+    language_version: python3
+    types: [ python ]
+    additional_dependencies: ['pylint==3.3.1']
+    require_serial: true
+    files: ^airflow/.*
+    exclude:
+      airflow/example_dags/.*
+    args:
+      # Use pylint only for the specific check, which are not available into the ruff
+      - "--disable=all"
+      # W0133: "Exception statement has no effect"
+      # see: https://github.com/astral-sh/ruff/issues/10145
+      - "--enable=W0133"
+  # - id: mypy-airflow
+  #   stages: [ 'manual' ]
+  #   name: Run mypy for airflow (manual)
+  #   language: python
+  #   entry: ./airflow/ci/pre_commit/mypy_folder.py airflow
+  #   pass_filenames: false
+  #   files: ^.*\.py$
+  #   require_serial: true
+  #   additional_dependencies: [ 'rich>=12.4.4' ]

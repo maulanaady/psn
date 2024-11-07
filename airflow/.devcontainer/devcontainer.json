@@ -1,0 +1,33 @@
+{
+  "name": "airflow",
+  "image": "apache/airflow:2.10.2-python3.9",
+  "runArgs": [
+    "--env-file",
+    ".env.sample"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "forwardPorts": [
+    8000
+  ],
+  "postCreateCommand": "pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "rogalmic.bash-debug",
+        "ms-azuretools.vscode-docker",
+        "timonwong.shellcheck",
+        "redhat.vscode-yaml",
+        "rogalmic.bash-debug",
+        "charliermarsh.ruff",
+        "ms-python.black-formatter",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace"
+}
