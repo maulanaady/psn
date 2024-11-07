@@ -26,6 +26,9 @@ jobs:
         - ${{ github.workspace }}/airflow/include:/opt/airflow/include
 
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
       - name: Check requirements file
         run: ls /opt/airflow/tests/
 
