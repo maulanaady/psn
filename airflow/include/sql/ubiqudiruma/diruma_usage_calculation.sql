@@ -1,3 +1,6 @@
+CREATE TABLE diruma_usage AS
+SELECT * FROM read_parquet('/opt/airflow/data/ubiqudiruma/ubiqudiruma.parquet');
+
 CREATE OR REPLACE TABLE stg_radacct AS
 WITH
   main_df AS (
@@ -81,7 +84,7 @@ CREATE OR REPLACE TABLE joined AS
 WITH
   b AS (
     SELECT *
-    FROM read_parquet('/opt/airflow/data/ubiqudiruma/ubiqudiruma.parquet')
+    FROM diruma_usage
   )
 
 SELECT
@@ -121,7 +124,7 @@ CREATE OR REPLACE TABLE track_radacct AS
 WITH
   c AS (
     SELECT *
-    FROM read_parquet('/opt/airflow/data/ubiqudiruma/ubiqudiruma.parquet')
+    FROM diruma_usage
   )
 
 SELECT
@@ -282,15 +285,12 @@ WITH
 
   f AS (
     SELECT *
-    FROM read_parquet('/opt/airflow/data/ubiqudiruma/ubiqudiruma.parquet')
+    FROM diruma_usage
   )
 
 SELECT *
 FROM tmp
 ORDER BY username, acctstarttime, extract_date;
-
-CREATE TABLE diruma_usage AS
-SELECT * FROM read_parquet('/opt/airflow/data/ubiqudiruma/ubiqudiruma.parquet');
 
 INSERT INTO diruma_usage SELECT * FROM newid;
 
