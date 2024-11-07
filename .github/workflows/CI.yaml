@@ -24,18 +24,17 @@ jobs:
         - ${{ github.workspace }}/airflow/dags:/opt/airflow/dags
         - ${{ github.workspace }}/airflow/tests:/opt/airflow/tests
         - ${{ github.workspace }}/airflow/include:/opt/airflow/include
-        - ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt
 
     steps:
       - name: Check requirements file
-        run: ls /opt/airflow/requirements.txt
+        run: cat /opt/airflow/tests/requirements.txt
 
       - name: Copy requirements.txt
         run: cp $GITHUB_WORKSPACE/airflow/requirements.txt /opt/airflow/requirements.txt
 
       - name: Install dependencies for airflow project
         run: |
-          cd /opt/airflow
+          cd /opt/airflow/tests
           pip install --no-cache-dir -r requirements.txt
 
       - name: Run tests
