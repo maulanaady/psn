@@ -51,7 +51,7 @@ class AlertHook(BaseHook):
     def exception_alert(self, err, **kwargs):
         """Callback function that is called when an exception
         is occured at DAG task."""
-        text = f"""<b>⚠️ AIRFLOW ALERT (TEST)⚠️</b>
+        text = f"""<b>⚠️ AIRFLOW ALERT⚠️</b>
 <b>STATUS</b>: <b>Exception Notification</b>
 <b>dag_id</b>: <b>{kwargs['dag_run'].dag_id}</b>
 <b>Run</b>: <b>{kwargs['dag_run'].run_id}</b>
