@@ -12,3 +12,4 @@ PyMySQL==1.1.1
 pytest==8.3.3
 ruff==0.7.2
 sqlfluff==3.2.5
+statsd==4.0.1
