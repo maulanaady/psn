@@ -1,3 +1,4 @@
+"apache-airflow[celery]==2.10.2" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.2/constraints-3.9.txt"
 apache-airflow-providers-telegram==4.6.0
 bandit==1.7.10
 black==24.10.0
@@ -6,9 +7,7 @@ Jinja2==3.1.4
 matplotlib==3.9.2
 mysql-connector-python==9.1.0
 pandas==2.1.4
-paramiko==3.5.0
 pre-commit==4.0.1
-psycopg2==2.9.10
 pylint==3.3.1
 PyMySQL==1.1.1
 pytest==8.3.3
