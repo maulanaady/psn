@@ -6,6 +6,7 @@ on:
       - 'airflow/**'
     branches:
       - main
+      - dev
   pull_request:
     paths:
       - 'airflow/**'
