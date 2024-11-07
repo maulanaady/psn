@@ -17,27 +17,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: apache/airflow:2.10.2-python3.9
-      volumes:
-        - ${{ github.workspace }}/airflow/config:/opt/airflow/config
-        - ${{ github.workspace }}/airflow/dags:/opt/airflow/dags
-        - ${{ github.workspace }}/airflow/tests:/opt/airflow/tests
-        - ${{ github.workspace }}/airflow/include:/opt/airflow/include
-
     steps:
+      # Step 1: Checkout the repository
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Check requirements file
-        run: ls /opt/airflow/tests/
-
-      - name: Install dependencies for airflow project
+      # Step 2: Set up Docker container and mount volumes
+      - name: Set up Docker container and mount volumes
         run: |
-          cd /opt/airflow/tests
-          pip install --no-cache-dir -r requirements.txt
-
-      - name: Run tests
-        run: |
-          cd /opt/airflow
-          pytest tests/dags
+          docker run -v ${{ github.workspace }}/airflow/config:/opt/airflow/config \
+                     -v ${{ github.workspace }}/airflow/dags:/opt/airflow/dags \
+                     -v ${{ github.workspace }}/airflow/tests:/opt/airflow/tests \
+                     -v ${{ github.workspace }}/airflow/include:/opt/airflow/include \
+                     -v ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt \
+                     apache/airflow:2.10.2-python3.9 /bin/bash -c "
+                       pip install --no-cache-dir -r /opt/airflow/requirements.txt &&
+                       pytest /opt/airflow/tests/dags
+                     "
