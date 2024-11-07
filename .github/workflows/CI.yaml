@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Check requirements file
-        run: cat /opt/airflow/tests/requirements.txt
+        run: ls /opt/airflow/tests/
 
       - name: Copy requirements.txt
         run: cp $GITHUB_WORKSPACE/airflow/requirements.txt /opt/airflow/requirements.txt
