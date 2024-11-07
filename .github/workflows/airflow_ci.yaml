@@ -15,7 +15,7 @@ on:
       - dev
 
 jobs:
-  container-test-job:
+  build:
     runs-on: ubuntu-latest
     container:
       image: apache/airflow:2.10.2-python3.9
