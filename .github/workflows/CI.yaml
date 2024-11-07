@@ -15,15 +15,15 @@ on:
       - dev
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       # Step 1: Checkout the repository
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Docker container and mount volumes
-      - name: Set up Docker container and mount volumes
+      # Step 2: Set up Docker container and run test
+      - name: Set up Docker container and run test
         run: |
           docker run --rm --entrypoint /bin/bash \
                      -v ${{ github.workspace }}/airflow/config:/opt/airflow/config \
