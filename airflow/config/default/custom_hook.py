@@ -36,7 +36,7 @@ class AlertHook(BaseHook):
             response.raise_for_status()
             logging.info("Message sent successfully")
         except requests.exceptions.RequestException as e:
-            logging.error(f"Failed to send message: {e}")
+            logging.error("Failed to send message: %s", e)
 
     def send_alert(self, status, kwargs):
         """Callback function that is called when an DAG is succeeded/failed."""
@@ -61,14 +61,18 @@ class AlertHook(BaseHook):
             text = text + f"""<b>Error Description</b>: <b>{err}</b>"""
         self.send_message(text)
 
-    def sla_miss_callback(self, status, kwargs):
+    def sla_miss_callback(self, status, *args):
         """Callback function that is called when an DAG SLA is missed."""
-        text = f"""<b>⚠️ AIRFLOW ALERT ⚠️</b>
-        <b>STATUS</b>: <b>{status}</b>
-        <b>DAG:</b> {kwargs['dag_run'].dag_id}
-        <b>Task(s):</b> {kwargs['task_instance_key_str']}
-        <b>Blocking Task(s):</b> {kwargs['blocking_task_list']}
-        <b>SLA(s):</b> {kwargs['slas']}
-        <b>Blocking Task Instances:</b> {kwargs['blocking_tis']}
-        """
-        self.send_message(text)
+        if len(args) >= 5:
+            dag, task_list, blocking_task_list, slas, blocking_tis = args[:5]
+            text = f"""<b>⚠️ AIRFLOW ALERT ⚠️</b>
+            <b>STATUS</b>: <b>{status}</b>
+            <b>DAG:</b> {dag}
+            <b>Task(s):</b> {task_list}
+            <b>Blocking Task(s):</b> {blocking_task_list}
+            <b>SLA(s):</b> {slas}
+            <b>Blocking Task Instances:</b> {blocking_tis}
+            """
+            self.send_message(text)
+        else:
+            logging.error("No matched number for required parameters")

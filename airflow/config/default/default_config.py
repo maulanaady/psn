@@ -34,10 +34,10 @@ class DefaultDAG(DAG):
             cls.alert_manager.send_alert("TASK IS FAILED", kwargs)
 
     @classmethod
-    def sla_miss_callback(cls, kwargs):
+    def sla_miss_callback(cls, *args):
         "Send telegram notification when DAG runtime duration is exceed defined SLA"
         if cls.alert_manager:
-            cls.alert_manager.sla_miss_callback("DAG RUNTIME IS OVER SLA", kwargs)
+            cls.alert_manager.sla_miss_callback("DAG RUNTIME IS OVER SLA", *args)
 
     @classmethod
     def exception_alert(cls, err, **kwargs):

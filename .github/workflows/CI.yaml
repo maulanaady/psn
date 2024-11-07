@@ -15,24 +15,23 @@ on:
       - dev
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
     steps:
+      # Step 1: Checkout the repository
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies for airflow project
+      # Step 2: Set up Docker container and run test
+      - name: Set up Docker container and run test
         run: |
-          cd airflow
-          pip install -r requirements.txt
-
-      - name: Run tests
-        run: |
-          cd airflow
-          pytest tests/dags
+          docker run --rm --entrypoint /bin/bash \
+                     -v ${{ github.workspace }}/airflow/config:/opt/airflow/config \
+                     -v ${{ github.workspace }}/airflow/dags:/opt/airflow/dags \
+                     -v ${{ github.workspace }}/airflow/tests:/opt/airflow/tests \
+                     -v ${{ github.workspace }}/airflow/include:/opt/airflow/include \
+                     -v ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt \
+                     apache/airflow:2.10.2-python3.9 -c "
+                       pip install --no-cache-dir -r /opt/airflow/requirements.txt &&
+                       pytest /opt/airflow/tests/dags
+                     "
