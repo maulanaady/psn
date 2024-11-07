@@ -124,7 +124,7 @@ with DefaultDAG(
         <b>Task</b>: <b>{context["task"].task_id}</b>
         <b>Execution time</b>: <b>{((context['data_interval_end'])
             .in_tz("Asia/Jakarta").strftime("%Y-%m-%d, %H:%M:%S"))}</b>"""
-        AlertHook.send_message(text=message, **context)
+        AlertHook.send_message(text=message)
 
     (
         checking_file("ssh-analysis")
