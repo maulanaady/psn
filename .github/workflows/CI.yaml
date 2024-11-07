@@ -27,6 +27,10 @@ jobs:
         - ${{ github.workspace }}/airflow/requirements.txt:/opt/airflow/requirements.txt
 
     steps:
+      - name: Fix permissions for the GitHub workspace
+        run: |
+          sudo chown -R $(whoami) /__w/_temp/
+
       - name: Check out the repository
         uses: actions/checkout@v3
 
