@@ -1,0 +1,43 @@
+[sqlfluff]
+dialect = ansi
+max_line_length = 120
+templater = jinja
+
+[sqlfluff:indentation]
+tab_space_size = 2
+indented_joins = False
+indented_using_on = True
+template_blocks_indent = False
+indented_on_contents = False
+indented_ctes = True
+indented_then = False
+
+[sqlfluff:templater]
+unwrap_wrapped_queries = True
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+
+[sqlfluff:rules:convention.not_equal]
+preferred_not_equal_style = c_style
+
+; [sqlfluff:rules:aliasing.length]
+; min_alias_length = 3
+
+[sqlfluff:layout:type:alias_expression]
+# We want non-default spacing _before_ the alias expressions.
+spacing_before = align
+# We want to align them within the next outer select clause.
+# This means for example that alias expressions within the FROM
+# or JOIN clause would _not_ be aligned with them.
+align_within = select_clause
+# The point at which to stop searching outward for siblings, which
+# in this example would likely be the boundary of a CTE. Stopping
+# when we hit brackets is usually a good rule of thumb for this
+# configuration.
+align_scope = bracketed
+
+[sqlfluff:layout:type:comma]
+spacing_before = touch
+line_position = trailing

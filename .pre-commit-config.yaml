@@ -82,7 +82,7 @@ repos:
     types: [ python ]
     additional_dependencies: ['pylint==3.3.1']
     require_serial: true
-    files: ^airflow/.*
+    files: .+\.py$
     exclude:
       airflow/example_dags/.*
     args:
